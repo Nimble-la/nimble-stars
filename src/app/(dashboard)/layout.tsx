@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { useAuth } from "@/lib/auth/auth-context";
 
 export default function DashboardLayout({
@@ -11,7 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { isLoading } = useAuth();
+  const { role, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -28,7 +29,10 @@ export default function DashboardLayout({
         onClose={() => setSidebarOpen(false)}
       />
       <div className="flex flex-1 flex-col">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Header
+          onMenuClick={() => setSidebarOpen(true)}
+          actions={role === "admin" ? <NotificationBell /> : undefined}
+        />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>

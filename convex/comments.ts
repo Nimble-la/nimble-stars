@@ -58,6 +58,33 @@ export const create = mutation({
       createdAt: now,
     });
 
+    // Notify admin users when a client leaves a comment
+    const actingUser = await ctx.db.get(args.userId);
+    if (actingUser?.role === "client") {
+      const cp = await ctx.db.get(args.candidatePositionId);
+      const candidate = cp ? await ctx.db.get(cp.candidateId) : null;
+      const candidateName = candidate?.fullName ?? "a candidate";
+      const message = `${args.userName} commented on ${candidateName}`;
+
+      const admins = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("role"), "admin"))
+        .collect();
+
+      await Promise.all(
+        admins.map((admin) =>
+          ctx.db.insert("notifications", {
+            type: "new_comment",
+            message,
+            isRead: false,
+            userId: admin._id,
+            relatedCandidatePositionId: args.candidatePositionId,
+            createdAt: now,
+          })
+        )
+      );
+    }
+
     return id;
   },
 });

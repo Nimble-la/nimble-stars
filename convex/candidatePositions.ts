@@ -218,5 +218,38 @@ export const updateStage = mutation({
       candidatePositionId: args.id,
       createdAt: now,
     });
+
+    // Notify admin users when a client changes stage
+    const actingUser = await ctx.db.get(args.userId);
+    if (actingUser?.role === "client") {
+      const candidate = await ctx.db.get(cp.candidateId);
+      const candidateName = candidate?.fullName ?? "A candidate";
+
+      const STAGE_LABELS: Record<string, string> = {
+        submitted: "Submitted",
+        to_interview: "Interview",
+        approved: "Approved",
+        rejected: "Rejected",
+      };
+      const message = `${args.userName} moved ${candidateName} from ${STAGE_LABELS[fromStage] ?? fromStage} to ${STAGE_LABELS[args.stage] ?? args.stage}`;
+
+      const admins = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("role"), "admin"))
+        .collect();
+
+      await Promise.all(
+        admins.map((admin) =>
+          ctx.db.insert("notifications", {
+            type: "stage_change",
+            message,
+            isRead: false,
+            userId: admin._id,
+            relatedCandidatePositionId: args.id,
+            createdAt: now,
+          })
+        )
+      );
+    }
   },
 });
