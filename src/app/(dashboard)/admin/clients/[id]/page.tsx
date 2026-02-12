@@ -6,21 +6,12 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -34,6 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pencil } from "lucide-react";
 import { uploadFile } from "@/lib/supabase/storage";
+import { PositionManagement } from "@/components/admin/position-management";
+import { UserManagement } from "@/components/admin/user-management";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
 
 function formatDate(timestamp: number): string {
@@ -227,49 +220,7 @@ export default function ClientDetailPage() {
               <CardTitle>Positions</CardTitle>
             </CardHeader>
             <CardContent>
-              {org.positions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No positions yet.
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-center">Candidates</TableHead>
-                      <TableHead>Created</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {org.positions.map((pos) => (
-                      <TableRow key={pos._id}>
-                        <TableCell className="font-medium">
-                          {pos.title}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={pos.status === "open" ? "default" : "secondary"}
-                            className={
-                              pos.status === "open"
-                                ? "bg-stage-approved text-white"
-                                : ""
-                            }
-                          >
-                            {pos.status === "open" ? "Open" : "Closed"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {pos.candidateCount}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatDate(pos.createdAt)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+              <PositionManagement orgId={org._id} positions={org.positions} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -280,44 +231,7 @@ export default function ClientDetailPage() {
               <CardTitle>Users</CardTitle>
             </CardHeader>
             <CardContent>
-              {org.users.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No users yet.
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {org.users.map((user) => (
-                      <TableRow key={user._id}>
-                        <TableCell className="font-medium">
-                          {user.name}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {user.email}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{user.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={user.isActive ? "default" : "secondary"}
-                          >
-                            {user.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+              <UserManagement orgId={org._id} />
             </CardContent>
           </Card>
         </TabsContent>
