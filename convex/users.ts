@@ -23,6 +23,25 @@ export const listByOrg = query({
   },
 });
 
+export const createAdmin = mutation({
+  args: {
+    email: v.string(),
+    name: v.string(),
+    supabaseUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const id = await ctx.db.insert("users", {
+      email: args.email,
+      name: args.name,
+      role: "admin",
+      supabaseUserId: args.supabaseUserId,
+      isActive: true,
+      createdAt: Date.now(),
+    });
+    return id;
+  },
+});
+
 export const createClientUser = mutation({
   args: {
     email: v.string(),
@@ -56,5 +75,15 @@ export const update = mutation({
     if (fields.name !== undefined) updates.name = fields.name;
     if (fields.isActive !== undefined) updates.isActive = fields.isActive;
     await ctx.db.patch(userId, updates);
+  },
+});
+
+export const updateSupabaseId = mutation({
+  args: {
+    userId: v.id("users"),
+    supabaseUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, { supabaseUserId: args.supabaseUserId });
   },
 });
