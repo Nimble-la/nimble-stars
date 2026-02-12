@@ -75,3 +75,70 @@ export const assign = mutation({
     return cpId;
   },
 });
+
+export const listByPosition = query({
+  args: { positionId: v.id("positions") },
+  handler: async (ctx, args) => {
+    const cps = await ctx.db
+      .query("candidatePositions")
+      .withIndex("by_position", (q) => q.eq("positionId", args.positionId))
+      .collect();
+
+    const withDetails = await Promise.all(
+      cps.map(async (cp) => {
+        const candidate = await ctx.db.get(cp.candidateId);
+        const comments = await ctx.db
+          .query("comments")
+          .withIndex("by_candidate_position", (q) =>
+            q.eq("candidatePositionId", cp._id)
+          )
+          .collect();
+        return {
+          ...cp,
+          candidateName: candidate?.fullName ?? "Unknown",
+          candidateRole: candidate?.currentRole,
+          commentCount: comments.length,
+        };
+      })
+    );
+
+    return withDetails;
+  },
+});
+
+export const updateStage = mutation({
+  args: {
+    id: v.id("candidatePositions"),
+    stage: v.union(
+      v.literal("submitted"),
+      v.literal("to_interview"),
+      v.literal("approved"),
+      v.literal("rejected")
+    ),
+    userId: v.id("users"),
+    userName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const cp = await ctx.db.get(args.id);
+    if (!cp) throw new Error("CandidatePosition not found");
+
+    const fromStage = cp.stage;
+    const now = Date.now();
+
+    await ctx.db.patch(args.id, {
+      stage: args.stage,
+      updatedAt: now,
+      lastInteractionAt: now,
+    });
+
+    await ctx.db.insert("activityLog", {
+      action: "stage_change",
+      fromStage,
+      toStage: args.stage,
+      userId: args.userId,
+      userName: args.userName,
+      candidatePositionId: args.id,
+      createdAt: now,
+    });
+  },
+});

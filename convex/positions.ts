@@ -1,6 +1,16 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+export const getById = query({
+  args: { positionId: v.id("positions") },
+  handler: async (ctx, args) => {
+    const position = await ctx.db.get(args.positionId);
+    if (!position) return null;
+    const org = await ctx.db.get(position.orgId);
+    return { ...position, orgName: org?.name ?? "Unknown" };
+  },
+});
+
 export const countOpen = query({
   args: {},
   handler: async (ctx) => {
