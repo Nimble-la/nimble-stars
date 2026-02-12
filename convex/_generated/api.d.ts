@@ -9,6 +9,7 @@ import type * as candidates from "../candidates";
 import type * as comments from "../comments";
 import type * as notifications from "../notifications";
 import type * as organizations from "../organizations";
+import type * as seed from "../seed";
 import type * as positions from "../positions";
 import type * as users from "../users";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   organizations: typeof organizations;
   positions: typeof positions;
+  seed: typeof seed;
   users: typeof users;
 }>;
 
