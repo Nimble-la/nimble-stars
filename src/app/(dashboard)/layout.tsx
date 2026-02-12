@@ -12,7 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { role, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -31,7 +31,7 @@ export default function DashboardLayout({
       <div className="flex flex-1 flex-col">
         <Header
           onMenuClick={() => setSidebarOpen(true)}
-          actions={role === "admin" ? <NotificationBell /> : undefined}
+          actions={<NotificationBell />}
         />
         <main className="flex-1 p-6">{children}</main>
       </div>

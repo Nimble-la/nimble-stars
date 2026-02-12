@@ -39,6 +39,48 @@ export const countUnread = query({
   },
 });
 
+export const listFiltered = query({
+  args: {
+    userId: v.id("users"),
+    filter: v.optional(
+      v.union(
+        v.literal("unread"),
+        v.literal("stage_change"),
+        v.literal("new_comment"),
+        v.literal("client_login"),
+        v.literal("candidate_assigned")
+      )
+    ),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 50;
+
+    if (args.filter === "unread") {
+      return await ctx.db
+        .query("notifications")
+        .withIndex("by_user_unread", (q) =>
+          q.eq("userId", args.userId).eq("isRead", false)
+        )
+        .order("desc")
+        .take(limit);
+    }
+
+    const all = await ctx.db
+      .query("notifications")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc")
+      .take(limit);
+
+    if (args.filter) {
+      const typeFilter = args.filter;
+      return all.filter((n) => n.type === typeFilter);
+    }
+
+    return all;
+  },
+});
+
 export const markAsRead = mutation({
   args: { id: v.id("notifications") },
   handler: async (ctx, args) => {

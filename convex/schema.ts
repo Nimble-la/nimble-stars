@@ -84,7 +84,12 @@ export default defineSchema({
   }).index("by_candidate_position", ["candidatePositionId"]),
 
   notifications: defineTable({
-    type: v.union(v.literal("stage_change"), v.literal("new_comment")),
+    type: v.union(
+      v.literal("stage_change"),
+      v.literal("new_comment"),
+      v.literal("client_login"),
+      v.literal("candidate_assigned")
+    ),
     message: v.string(),
     isRead: v.boolean(),
     userId: v.id("users"),

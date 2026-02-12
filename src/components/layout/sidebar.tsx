@@ -14,6 +14,7 @@ import {
   Building2,
   Users,
   Briefcase,
+  Bell,
   LogOut,
   X,
 } from "lucide-react";
@@ -27,12 +28,14 @@ interface SidebarProps {
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/alerts", label: "Alerts", icon: Bell },
   { href: "/admin/clients", label: "Clients", icon: Building2 },
   { href: "/admin/candidates", label: "Candidates", icon: Users },
 ];
 
 const clientLinks = [
   { href: "/positions", label: "Positions", icon: Briefcase },
+  { href: "/alerts", label: "Alerts", icon: Bell },
 ];
 
 export function Sidebar({ open, onClose }: SidebarProps) {
@@ -46,6 +49,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     !isAdmin && orgId ? { orgId: orgId as Id<"organizations"> } : "skip"
   );
   const logoUrl = isAdmin ? null : (org?.logoUrl ?? null);
+
+  const unreadCount = useQuery(
+    api.notifications.countUnread,
+    user ? { userId: user._id as Id<"users"> } : "skip"
+  );
 
   const links = role === "admin" ? adminLinks : clientLinks;
 
@@ -103,6 +111,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             const isActive =
               pathname === link.href ||
               (link.href !== "/admin" && pathname.startsWith(link.href));
+            const showBadge =
+              link.label === "Alerts" && !!unreadCount && unreadCount > 0;
             return (
               <Link
                 key={link.href}
@@ -117,6 +127,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               >
                 <link.icon className="h-5 w-5" />
                 {link.label}
+                {showBadge && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
