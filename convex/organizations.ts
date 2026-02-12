@@ -7,3 +7,11 @@ export const getById = query({
     return await ctx.db.get(args.orgId);
   },
 });
+
+export const countActive = query({
+  args: {},
+  handler: async (ctx) => {
+    const orgs = await ctx.db.query("organizations").collect();
+    return orgs.length;
+  },
+});
