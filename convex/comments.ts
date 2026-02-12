@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import { v } from "convex/values";
-import { newCommentHtml } from "./emailTemplates";
+import { newCommentHtml, adminCommentHtml } from "./emailTemplates";
 
 export const listByCandidatePosition = query({
   args: { candidatePositionId: v.id("candidatePositions") },
@@ -60,16 +60,17 @@ export const create = mutation({
       createdAt: now,
     });
 
-    // Notify admin users when a client leaves a comment
+    // Notify based on who commented
     const actingUser = await ctx.db.get(args.userId);
-    if (actingUser?.role === "client") {
-      const cp = await ctx.db.get(args.candidatePositionId);
-      const candidate = cp ? await ctx.db.get(cp.candidateId) : null;
-      const position = cp ? await ctx.db.get(cp.positionId) : null;
-      const candidateName = candidate?.fullName ?? "a candidate";
-      const message = `${args.userName} commented on ${candidateName}`;
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
+    const cp = await ctx.db.get(args.candidatePositionId);
+    const candidate = cp ? await ctx.db.get(cp.candidateId) : null;
+    const position = cp ? await ctx.db.get(cp.positionId) : null;
+    const candidateName = candidate?.fullName ?? "a candidate";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
 
+    if (actingUser?.role === "client") {
+      // Client comments → notify admins
+      const message = `${args.userName} commented on ${candidateName}`;
       const admins = await ctx.db
         .query("users")
         .filter((q) => q.eq(q.field("role"), "admin"))
@@ -96,6 +97,40 @@ export const create = mutation({
               profileUrl: `${baseUrl}/admin`,
             }),
             templateName: "new-comment",
+            relatedEventType: "new_comment",
+            relatedCandidatePositionId: args.candidatePositionId,
+          });
+        })
+      );
+    } else if (actingUser?.role === "admin" && position) {
+      // Admin comments → notify client users in the org
+      const message = `Nimble left a note on ${candidateName}`;
+      const clientUsers = await ctx.db
+        .query("users")
+        .withIndex("by_org", (q) => q.eq("orgId", position.orgId))
+        .filter((q) => q.eq(q.field("role"), "client"))
+        .collect();
+
+      await Promise.all(
+        clientUsers.map(async (clientUser) => {
+          await ctx.db.insert("notifications", {
+            type: "new_comment",
+            message,
+            isRead: false,
+            userId: clientUser._id,
+            relatedCandidatePositionId: args.candidatePositionId,
+            createdAt: now,
+          });
+          await ctx.scheduler.runAfter(0, api.emails.sendNotificationEmail, {
+            to: clientUser.email,
+            subject: `Note from Nimble on ${candidateName}`,
+            html: adminCommentHtml({
+              candidateName,
+              positionTitle: position.title,
+              commentPreview: args.body,
+              profileUrl: `${baseUrl}/positions/${position._id}`,
+            }),
+            templateName: "admin-comment",
             relatedEventType: "new_comment",
             relatedCandidatePositionId: args.candidatePositionId,
           });

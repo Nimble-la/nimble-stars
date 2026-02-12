@@ -111,6 +111,90 @@ export function candidateAssignedHtml(data: {
   `);
 }
 
+// Workflow-specific: richer stage emails with next-step guidance
+export function workflowToInterviewHtml(data: {
+  candidateName: string;
+  positionTitle: string;
+  orgName: string;
+  profileUrl: string;
+}): string {
+  return wrap(`
+    <h2 style="font-size:20px;font-weight:bold;color:#111827;margin:16px 0 8px">Interview Stage</h2>
+    <p style="font-size:14px;color:#374151;line-height:24px">
+      <strong>${data.candidateName}</strong> has been moved to the ${stageBadge("to_interview")} stage
+      for <strong>${data.positionTitle}</strong>.
+    </p>
+    <p style="font-size:13px;color:#6b7280;margin:4px 0 8px">${data.orgName}</p>
+    <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:16px;margin:16px 0 24px">
+      <p style="font-size:14px;color:#92400E;margin:0;font-weight:600">Next Step: Schedule an interview</p>
+      <p style="font-size:13px;color:#92400E;margin:4px 0 0">Review the candidate's profile and coordinate interview scheduling.</p>
+    </div>
+    ${btn("Review Candidate", data.profileUrl)}
+  `);
+}
+
+export function workflowApprovedHtml(data: {
+  candidateName: string;
+  positionTitle: string;
+  orgName: string;
+  profileUrl: string;
+}): string {
+  return wrap(`
+    <h2 style="font-size:20px;font-weight:bold;color:#111827;margin:16px 0 8px">Candidate Approved</h2>
+    <p style="font-size:14px;color:#374151;line-height:24px">
+      <strong>${data.candidateName}</strong> has been ${stageBadge("approved")}
+      for <strong>${data.positionTitle}</strong>.
+    </p>
+    <p style="font-size:13px;color:#6b7280;margin:4px 0 8px">${data.orgName}</p>
+    <div style="background:#D1FAE5;border:1px solid #10B981;border-radius:8px;padding:16px;margin:16px 0 24px">
+      <p style="font-size:14px;color:#065F46;margin:0;font-weight:600">Next Step: Prepare offer</p>
+      <p style="font-size:13px;color:#065F46;margin:4px 0 0">The candidate has been approved. Coordinate next steps for the hiring process.</p>
+    </div>
+    ${btn("View Candidate", data.profileUrl)}
+  `);
+}
+
+export function workflowRejectedHtml(data: {
+  candidateName: string;
+  positionTitle: string;
+  actorName: string;
+  orgName: string;
+  profileUrl: string;
+}): string {
+  return wrap(`
+    <h2 style="font-size:20px;font-weight:bold;color:#111827;margin:16px 0 8px">Candidate Rejected</h2>
+    <p style="font-size:14px;color:#374151;line-height:24px">
+      <strong>${data.candidateName}</strong> was ${stageBadge("rejected")}
+      for <strong>${data.positionTitle}</strong> by <strong>${data.actorName}</strong>.
+    </p>
+    <p style="font-size:13px;color:#6b7280;margin:4px 0 24px">${data.orgName}</p>
+    ${btn("View Details", data.profileUrl)}
+  `);
+}
+
+export function adminCommentHtml(data: {
+  candidateName: string;
+  positionTitle: string;
+  commentPreview: string;
+  profileUrl: string;
+}): string {
+  const preview =
+    data.commentPreview.length > 200
+      ? data.commentPreview.slice(0, 200) + "..."
+      : data.commentPreview;
+  return wrap(`
+    <h2 style="font-size:20px;font-weight:bold;color:#111827;margin:16px 0 8px">Note from Nimble</h2>
+    <p style="font-size:14px;color:#374151;line-height:24px">
+      Nimble left a note on <strong>${data.candidateName}</strong>
+    </p>
+    <p style="font-size:13px;color:#6b7280;margin:4px 0 16px">Position: ${data.positionTitle}</p>
+    <div style="border-left:3px solid #d1d5db;padding-left:16px;margin:0 0 24px">
+      <p style="font-size:14px;color:#4b5563;font-style:italic;line-height:22px;margin:0">&ldquo;${preview}&rdquo;</p>
+    </div>
+    ${btn("View Comments", data.profileUrl)}
+  `);
+}
+
 export function clientLoginHtml(data: {
   userName: string;
   orgName: string;
