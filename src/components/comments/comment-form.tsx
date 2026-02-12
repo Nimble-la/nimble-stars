@@ -6,6 +6,7 @@ import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth/auth-context";
+import { toast } from "sonner";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 interface CommentFormProps {
@@ -30,6 +31,8 @@ export function CommentForm({ candidatePositionId }: CommentFormProps) {
         candidatePositionId,
       });
       setBody("");
+    } catch {
+      toast.error("Failed to post comment");
     } finally {
       setSaving(false);
     }

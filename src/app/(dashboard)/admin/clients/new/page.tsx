@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { uploadFile } from "@/lib/supabase/storage";
+import { toast } from "sonner";
 
 export default function NewClientPage() {
   const [name, setName] = useState("");
@@ -57,8 +58,10 @@ export default function NewClientPage() {
         primaryColor,
       });
 
+      toast.success("Client created");
       router.push(`/admin/clients/${id}`);
     } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create client");
       setError(
         err instanceof Error ? err.message : "Failed to create client"
       );

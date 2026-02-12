@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 interface Position {
@@ -73,10 +74,13 @@ function AddPositionDialog({
         description: description || undefined,
         orgId,
       });
+      toast.success("Position created");
       setOpen(false);
       setTitle("");
       setDescription("");
       onCreated();
+    } catch {
+      toast.error("Failed to create position");
     } finally {
       setSaving(false);
     }
@@ -132,10 +136,13 @@ export function PositionManagement({ orgId, positions }: PositionManagementProps
   const updateStatus = useMutation(api.positions.updateStatus);
 
   const toggleStatus = async (positionId: Id<"positions">, currentStatus: string) => {
-    await updateStatus({
-      positionId,
-      status: currentStatus === "open" ? "closed" : "open",
-    });
+    const newStatus = currentStatus === "open" ? "closed" : "open";
+    try {
+      await updateStatus({ positionId, status: newStatus });
+      toast.success(`Position ${newStatus === "open" ? "reopened" : "closed"}`);
+    } catch {
+      toast.error("Failed to update position status");
+    }
   };
 
   if (positions === undefined) {

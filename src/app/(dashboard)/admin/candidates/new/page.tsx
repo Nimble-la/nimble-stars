@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Upload, X, FileIcon } from "lucide-react";
 import { uploadFile } from "@/lib/supabase/storage";
+import { toast } from "sonner";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
 
 interface PendingFile {
@@ -110,8 +111,10 @@ export default function NewCandidatePage() {
         }
       }
 
+      toast.success("Candidate created");
       router.push(`/admin/candidates/${candidateId}`);
     } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create candidate");
       setError(err instanceof Error ? err.message : "Failed to create candidate");
       setSaving(false);
     }
