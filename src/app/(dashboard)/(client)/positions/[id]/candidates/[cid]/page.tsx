@@ -22,6 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StageBadge, STAGE_CONFIG } from "@/components/pipeline/stage-badge";
 import { Copy, FileIcon, Download } from "lucide-react";
+import { CommentList } from "@/components/comments/comment-list";
+import { CommentForm } from "@/components/comments/comment-form";
 import { useAuth } from "@/lib/auth/auth-context";
 import { toast } from "sonner";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
@@ -239,8 +241,9 @@ export default function ClientCandidateProfilePage() {
         </TabsList>
         <TabsContent value="comments" className="mt-4">
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">Comments will appear here.</p>
+            <CardContent className="space-y-4 pt-6">
+              <CommentForm candidatePositionId={candidatePositionId as Id<"candidatePositions">} />
+              <CommentList candidatePositionId={candidatePositionId as Id<"candidatePositions">} />
             </CardContent>
           </Card>
         </TabsContent>

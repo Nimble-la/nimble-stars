@@ -6,6 +6,7 @@ import type * as activityLog from "../activityLog";
 import type * as candidateFiles from "../candidateFiles";
 import type * as candidatePositions from "../candidatePositions";
 import type * as candidates from "../candidates";
+import type * as comments from "../comments";
 import type * as organizations from "../organizations";
 import type * as positions from "../positions";
 import type * as users from "../users";
@@ -18,6 +19,7 @@ declare const fullApi: ApiFromModules<{
   candidateFiles: typeof candidateFiles;
   candidatePositions: typeof candidatePositions;
   candidates: typeof candidates;
+  comments: typeof comments;
   organizations: typeof organizations;
   positions: typeof positions;
   users: typeof users;
