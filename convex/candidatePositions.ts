@@ -106,6 +106,45 @@ export const listByPosition = query({
   },
 });
 
+export const listByPositionForClient = query({
+  args: {
+    positionId: v.id("positions"),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    // Verify position belongs to org and is open
+    const position = await ctx.db.get(args.positionId);
+    if (!position || position.orgId !== args.orgId || position.status !== "open") {
+      return [];
+    }
+
+    const cps = await ctx.db
+      .query("candidatePositions")
+      .withIndex("by_position", (q) => q.eq("positionId", args.positionId))
+      .collect();
+
+    const withDetails = await Promise.all(
+      cps.map(async (cp) => {
+        const candidate = await ctx.db.get(cp.candidateId);
+        const comments = await ctx.db
+          .query("comments")
+          .withIndex("by_candidate_position", (q) =>
+            q.eq("candidatePositionId", cp._id)
+          )
+          .collect();
+        return {
+          ...cp,
+          candidateName: candidate?.fullName ?? "Unknown",
+          candidateRole: candidate?.currentRole,
+          commentCount: comments.length,
+        };
+      })
+    );
+
+    return withDetails;
+  },
+});
+
 export const updateStage = mutation({
   args: {
     id: v.id("candidatePositions"),

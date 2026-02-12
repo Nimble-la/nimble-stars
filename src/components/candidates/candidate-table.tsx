@@ -33,6 +33,7 @@ interface CandidateItem {
 
 interface CandidateTableProps {
   candidates: CandidateItem[];
+  onRowClick?: (candidateId: Id<"candidates">) => void;
 }
 
 function formatDate(timestamp: number): string {
@@ -45,7 +46,7 @@ function formatDate(timestamp: number): string {
 
 type SortKey = "createdAt" | "lastInteractionAt";
 
-export function CandidateTable({ candidates }: CandidateTableProps) {
+export function CandidateTable({ candidates, onRowClick }: CandidateTableProps) {
   const router = useRouter();
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortKey>("lastInteractionAt");
@@ -103,7 +104,11 @@ export function CandidateTable({ candidates }: CandidateTableProps) {
               <TableRow
                 key={c._id}
                 className="cursor-pointer"
-                onClick={() => router.push(`/admin/candidates/${c.candidateId}`)}
+                onClick={() =>
+                  onRowClick
+                    ? onRowClick(c.candidateId)
+                    : router.push(`/admin/candidates/${c.candidateId}`)
+                }
               >
                 <TableCell className="font-medium">{c.candidateName}</TableCell>
                 <TableCell className="text-muted-foreground">
