@@ -13,6 +13,19 @@ export const getRecent = query({
   },
 });
 
+export const listByCandidatePosition = query({
+  args: { candidatePositionId: v.id("candidatePositions") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("activityLog")
+      .withIndex("by_candidate_position", (q) =>
+        q.eq("candidatePositionId", args.candidatePositionId)
+      )
+      .order("desc")
+      .collect();
+  },
+});
+
 export const listByPosition = query({
   args: { positionId: v.id("positions") },
   handler: async (ctx, args) => {

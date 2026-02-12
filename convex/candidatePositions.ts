@@ -106,6 +106,45 @@ export const listByPosition = query({
   },
 });
 
+export const getForClient = query({
+  args: {
+    candidatePositionId: v.id("candidatePositions"),
+    orgId: v.id("organizations"),
+  },
+  handler: async (ctx, args) => {
+    const cp = await ctx.db.get(args.candidatePositionId);
+    if (!cp) return null;
+
+    // Verify position belongs to org
+    const position = await ctx.db.get(cp.positionId);
+    if (!position || position.orgId !== args.orgId) return null;
+
+    const candidate = await ctx.db.get(cp.candidateId);
+    if (!candidate) return null;
+
+    const files = await ctx.db
+      .query("candidateFiles")
+      .withIndex("by_candidate", (q) => q.eq("candidateId", cp.candidateId))
+      .collect();
+
+    // Return candidate data WITHOUT manatalUrl
+    return {
+      ...cp,
+      candidate: {
+        _id: candidate._id,
+        fullName: candidate.fullName,
+        email: candidate.email,
+        phone: candidate.phone,
+        currentRole: candidate.currentRole,
+        currentCompany: candidate.currentCompany,
+        summary: candidate.summary,
+      },
+      files,
+      positionTitle: position.title,
+    };
+  },
+});
+
 export const listByPositionForClient = query({
   args: {
     positionId: v.id("positions"),
