@@ -67,3 +67,40 @@ npm run lint         # ESLint
 npx tsc --noEmit    # TypeScript type checking
 npm run build        # Full production build
 ```
+
+## Deployment (Vercel)
+
+### Initial Setup
+
+1. Push your repository to GitHub
+2. Go to [vercel.com](https://vercel.com) and import the repository
+3. Configure the following environment variables in Vercel's project settings:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex production deployment URL |
+| `CONVEX_DEPLOY_KEY` | Convex deploy key (for CI/CD) |
+
+4. Deploy — Vercel will auto-detect Next.js and configure the build
+
+### Convex Production Deployment
+
+Before deploying to Vercel, deploy your Convex schema and functions:
+
+```bash
+npx convex deploy
+```
+
+### Verification Checklist
+
+After deployment, verify:
+
+- [ ] `/login` page loads correctly
+- [ ] Authentication works with valid credentials
+- [ ] Admin users redirect to `/admin` after login
+- [ ] Client users redirect to `/positions` after login
+- [ ] Sidebar navigation renders correctly
+- [ ] Mobile responsive layout works
