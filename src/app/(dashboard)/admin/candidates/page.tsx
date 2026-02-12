@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, Download } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ManatalSearch } from "@/components/manatal/manatal-search";
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString("en-US", {
@@ -32,12 +33,15 @@ export default function CandidatesPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [cursor, setCursor] = useState<number | undefined>(undefined);
+  const [manatalOpen, setManatalOpen] = useState(false);
 
   const result = useQuery(api.candidates.list, {
     search: search || undefined,
     limit: PAGE_SIZE,
     cursor,
   });
+
+  const importCandidate = useAction(api.manatal.importCandidate);
 
   const candidates = result?.candidates;
   const nextCursor = result?.nextCursor;
@@ -46,11 +50,25 @@ export default function CandidatesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Candidates</h1>
-        <Button onClick={() => router.push("/admin/candidates/new")}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Candidate
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setManatalOpen(true)}>
+            <Download className="mr-2 h-4 w-4" />
+            Import from Manatal
+          </Button>
+          <Button onClick={() => router.push("/admin/candidates/new")}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Candidate
+          </Button>
+        </div>
       </div>
+
+      <ManatalSearch
+        open={manatalOpen}
+        onOpenChange={setManatalOpen}
+        onImport={async (manatalId) => {
+          await importCandidate({ manatalId });
+        }}
+      />
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

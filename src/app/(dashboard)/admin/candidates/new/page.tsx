@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { Upload, X, FileIcon } from "lucide-react";
 import { uploadFile } from "@/lib/supabase/storage";
 import { toast } from "sonner";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
+import { ManatalSearch } from "@/components/manatal/manatal-search";
 
 interface PendingFile {
   file: File;
@@ -38,9 +39,11 @@ export default function NewCandidatePage() {
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [manatalOpen, setManatalOpen] = useState(false);
 
   const createCandidate = useMutation(api.candidates.create);
   const createFile = useMutation(api.candidateFiles.create);
+  const importCandidate = useAction(api.manatal.importCandidate);
 
   const handleFilesSelected = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
@@ -122,7 +125,25 @@ export default function NewCandidatePage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">New Candidate</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">New Candidate</h1>
+        <button
+          type="button"
+          onClick={() => setManatalOpen(true)}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Or import from Manatal &rarr;
+        </button>
+      </div>
+
+      <ManatalSearch
+        open={manatalOpen}
+        onOpenChange={setManatalOpen}
+        onImport={async (manatalId) => {
+          await importCandidate({ manatalId });
+        }}
+        onImported={() => router.push("/admin/candidates")}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
