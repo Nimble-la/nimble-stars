@@ -1,5 +1,7 @@
 import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
 import { v } from "convex/values";
+import { newCommentHtml } from "./emailTemplates";
 
 export const listByCandidatePosition = query({
   args: { candidatePositionId: v.id("candidatePositions") },
@@ -63,8 +65,10 @@ export const create = mutation({
     if (actingUser?.role === "client") {
       const cp = await ctx.db.get(args.candidatePositionId);
       const candidate = cp ? await ctx.db.get(cp.candidateId) : null;
+      const position = cp ? await ctx.db.get(cp.positionId) : null;
       const candidateName = candidate?.fullName ?? "a candidate";
       const message = `${args.userName} commented on ${candidateName}`;
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
 
       const admins = await ctx.db
         .query("users")
@@ -72,16 +76,30 @@ export const create = mutation({
         .collect();
 
       await Promise.all(
-        admins.map((admin) =>
-          ctx.db.insert("notifications", {
+        admins.map(async (admin) => {
+          await ctx.db.insert("notifications", {
             type: "new_comment",
             message,
             isRead: false,
             userId: admin._id,
             relatedCandidatePositionId: args.candidatePositionId,
             createdAt: now,
-          })
-        )
+          });
+          await ctx.scheduler.runAfter(0, api.emails.sendNotificationEmail, {
+            to: admin.email,
+            subject: `New Comment on ${candidateName}`,
+            html: newCommentHtml({
+              actorName: args.userName,
+              candidateName,
+              positionTitle: position?.title ?? "Unknown",
+              commentPreview: args.body,
+              profileUrl: `${baseUrl}/admin`,
+            }),
+            templateName: "new-comment",
+            relatedEventType: "new_comment",
+            relatedCandidatePositionId: args.candidatePositionId,
+          });
+        })
       );
     }
 

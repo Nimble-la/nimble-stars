@@ -1,5 +1,7 @@
 import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
 import { v } from "convex/values";
+import { clientLoginHtml } from "./emailTemplates";
 
 export const getBySupabaseId = query({
   args: { supabaseUserId: v.string() },
@@ -106,16 +108,34 @@ export const recordLogin = mutation({
           .filter((q) => q.eq(q.field("role"), "admin"))
           .collect();
 
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
+        const loginTime = new Date(now).toLocaleString("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        });
+
         await Promise.all(
-          admins.map((admin) =>
-            ctx.db.insert("notifications", {
+          admins.map(async (admin) => {
+            await ctx.db.insert("notifications", {
               type: "client_login",
               message: `${user.name} from ${orgName} logged in`,
               isRead: false,
               userId: admin._id,
               createdAt: now,
-            })
-          )
+            });
+            await ctx.scheduler.runAfter(0, api.emails.sendNotificationEmail, {
+              to: admin.email,
+              subject: `Client Login: ${user.name} from ${orgName}`,
+              html: clientLoginHtml({
+                userName: user.name,
+                orgName,
+                loginTime,
+                clientDetailUrl: `${baseUrl}/admin/clients`,
+              }),
+              templateName: "client-login",
+              relatedEventType: "client_login",
+            });
+          })
         );
       }
     }

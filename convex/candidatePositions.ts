@@ -1,5 +1,7 @@
 import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
 import { v } from "convex/values";
+import { stageChangeHtml, candidateAssignedHtml } from "./emailTemplates";
 
 export const countAll = query({
   args: {},
@@ -71,6 +73,51 @@ export const assign = mutation({
       candidatePositionId: cpId,
       createdAt: now,
     });
+
+    // Notify client users in the org about the new candidate assignment
+    const position = await ctx.db.get(args.positionId);
+    if (position) {
+      const candidate = await ctx.db.get(args.candidateId);
+      const org = await ctx.db.get(position.orgId);
+      const candidateName = candidate?.fullName ?? "A candidate";
+      const message = `${candidateName} has been assigned to ${position.title}`;
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
+
+      const clientUsers = await ctx.db
+        .query("users")
+        .withIndex("by_org", (q) => q.eq("orgId", position.orgId))
+        .filter((q) => q.eq(q.field("role"), "client"))
+        .collect();
+
+      await Promise.all(
+        clientUsers
+          .filter((u) => u._id !== args.userId)
+          .map(async (clientUser) => {
+            await ctx.db.insert("notifications", {
+              type: "candidate_assigned",
+              message,
+              isRead: false,
+              userId: clientUser._id,
+              relatedCandidatePositionId: cpId,
+              createdAt: now,
+            });
+            await ctx.scheduler.runAfter(0, api.emails.sendNotificationEmail, {
+              to: clientUser.email,
+              subject: `New Candidate: ${candidateName} for ${position.title}`,
+              html: candidateAssignedHtml({
+                candidateName,
+                positionTitle: position.title,
+                orgName: org?.name ?? "Unknown",
+                currentRole: candidate?.currentRole,
+                profileUrl: `${baseUrl}/positions/${position._id}`,
+              }),
+              templateName: "candidate-assigned",
+              relatedEventType: "candidate_assigned",
+              relatedCandidatePositionId: cpId,
+            });
+          })
+      );
+    }
 
     return cpId;
   },
@@ -238,17 +285,38 @@ export const updateStage = mutation({
         .filter((q) => q.eq(q.field("role"), "admin"))
         .collect();
 
+      const position = await ctx.db.get(cp.positionId);
+      const org = position ? await ctx.db.get(position.orgId) : null;
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stars.nimble.la";
+
       await Promise.all(
-        admins.map((admin) =>
-          ctx.db.insert("notifications", {
+        admins.map(async (admin) => {
+          await ctx.db.insert("notifications", {
             type: "stage_change",
             message,
             isRead: false,
             userId: admin._id,
             relatedCandidatePositionId: args.id,
             createdAt: now,
-          })
-        )
+          });
+          // Schedule email
+          await ctx.scheduler.runAfter(0, api.emails.sendNotificationEmail, {
+            to: admin.email,
+            subject: `Stage Change: ${candidateName} → ${STAGE_LABELS[args.stage] ?? args.stage}`,
+            html: stageChangeHtml({
+              actorName: args.userName,
+              candidateName,
+              fromStage,
+              toStage: args.stage,
+              positionTitle: position?.title ?? "Unknown",
+              orgName: org?.name ?? "Unknown",
+              profileUrl: `${baseUrl}/admin`,
+            }),
+            templateName: "stage-change",
+            relatedEventType: "stage_change",
+            relatedCandidatePositionId: args.id,
+          });
+        })
       );
     }
   },
