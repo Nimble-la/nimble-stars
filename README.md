@@ -15,27 +15,55 @@ A white-label platform for [Nimble](https://nimble.la) to share candidate profil
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- A [Convex](https://convex.dev) project
+
+### Supabase Setup
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Enable **Email/Password** authentication in Authentication > Providers
+3. Create two storage buckets in Storage:
+   - `files` — for candidate files (resumes, documents). Allow any file type, no size limit.
+   - `logos` — for organization logos
+4. Copy your project URL and keys from Settings > API
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in the values:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only) |
+| `NEXT_PUBLIC_CONVEX_URL` | Convex deployment URL |
+
+### Development
+
 ```bash
 # Install dependencies
 npm install
 
-# Start the development server
+# Start Convex dev server (in a separate terminal)
+npx convex dev
+
+# Start Next.js dev server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Environment Variables
+### Quality Checks
 
-Create a `.env.local` file with:
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# Convex
-NEXT_PUBLIC_CONVEX_URL=
-CONVEX_DEPLOY_KEY=
+```bash
+npm run lint         # ESLint
+npx tsc --noEmit    # TypeScript type checking
+npm run build        # Full production build
 ```
