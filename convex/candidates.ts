@@ -2,9 +2,14 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const list = query({
-  args: { search: v.optional(v.string()) },
+  args: {
+    search: v.optional(v.string()),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.number()),
+  },
   handler: async (ctx, args) => {
-    const candidates = await ctx.db.query("candidates").collect();
+    const pageSize = args.limit ?? 50;
+    const candidates = await ctx.db.query("candidates").order("desc").collect();
 
     const filtered = args.search
       ? candidates.filter((c) => {
@@ -17,8 +22,11 @@ export const list = query({
         })
       : candidates;
 
+    const startIndex = args.cursor ?? 0;
+    const page = filtered.slice(startIndex, startIndex + pageSize);
+
     const withCounts = await Promise.all(
-      filtered.map(async (candidate) => {
+      page.map(async (candidate) => {
         const cps = await ctx.db
           .query("candidatePositions")
           .withIndex("by_candidate", (q) => q.eq("candidateId", candidate._id))
@@ -27,7 +35,12 @@ export const list = query({
       })
     );
 
-    return withCounts;
+    const nextCursor =
+      startIndex + pageSize < filtered.length
+        ? startIndex + pageSize
+        : undefined;
+
+    return { candidates: withCounts, nextCursor };
   },
 });
 

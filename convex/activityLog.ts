@@ -14,15 +14,19 @@ export const getRecent = query({
 });
 
 export const listByCandidatePosition = query({
-  args: { candidatePositionId: v.id("candidatePositions") },
+  args: {
+    candidatePositionId: v.id("candidatePositions"),
+    limit: v.optional(v.number()),
+  },
   handler: async (ctx, args) => {
+    const limit = args.limit ?? 50;
     return await ctx.db
       .query("activityLog")
       .withIndex("by_candidate_position", (q) =>
         q.eq("candidatePositionId", args.candidatePositionId)
       )
       .order("desc")
-      .collect();
+      .take(limit);
   },
 });
 

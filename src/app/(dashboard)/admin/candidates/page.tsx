@@ -26,13 +26,21 @@ function formatDate(timestamp: number): string {
   });
 }
 
+const PAGE_SIZE = 50;
+
 export default function CandidatesPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [cursor, setCursor] = useState<number | undefined>(undefined);
 
-  const candidates = useQuery(api.candidates.list, {
+  const result = useQuery(api.candidates.list, {
     search: search || undefined,
+    limit: PAGE_SIZE,
+    cursor,
   });
+
+  const candidates = result?.candidates;
+  const nextCursor = result?.nextCursor;
 
   return (
     <div className="space-y-6">
@@ -49,18 +57,21 @@ export default function CandidatesPage() {
         <Input
           placeholder="Search by name, role, or company..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCursor(undefined);
+          }}
           className="pl-9"
         />
       </div>
 
-      {candidates === undefined ? (
+      {result === undefined ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
         </div>
-      ) : candidates.length === 0 ? (
+      ) : candidates!.length === 0 && cursor === undefined ? (
         <EmptyState
           icon={search ? Search : Users}
           title={search ? "No results found" : "No candidates yet"}
@@ -68,6 +79,7 @@ export default function CandidatesPage() {
           action={!search ? { label: "New Candidate", onClick: () => router.push("/admin/candidates/new") } : undefined}
         />
       ) : (
+        <>
         <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -80,7 +92,7 @@ export default function CandidatesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {candidates.map((candidate) => (
+            {candidates!.map((candidate) => (
               <TableRow
                 key={candidate._id}
                 className="cursor-pointer"
@@ -108,6 +120,26 @@ export default function CandidatesPage() {
           </TableBody>
         </Table>
         </div>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={cursor === undefined}
+            onClick={() => setCursor(undefined)}
+          >
+            First Page
+          </Button>
+          {nextCursor !== undefined && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCursor(nextCursor)}
+            >
+              Load More
+            </Button>
+          )}
+        </div>
+        </>
       )}
     </div>
   );
