@@ -178,24 +178,36 @@ function buildSummary(
   return parts.join("\n\n");
 }
 
+const MAX_RESUME_SIZE = 50 * 1024 * 1024; // 50MB
+
 async function uploadResumeToSupabase(
   resumeUrl: string,
   candidateId: string
-): Promise<string | null> {
+): Promise<{ url: string | null; warning?: string }> {
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    console.warn("Supabase credentials not configured, skipping resume upload");
-    return null;
+    return { url: null, warning: "Supabase credentials not configured" };
   }
 
   try {
     // Download resume from Manatal
     const response = await fetch(resumeUrl);
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return { url: null, warning: "Resume download failed (file may no longer exist)" };
+    }
+
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength) > MAX_RESUME_SIZE) {
+      return { url: null, warning: "Resume file too large (exceeds 50MB limit)" };
+    }
 
     const fileBuffer = await response.arrayBuffer();
+    if (fileBuffer.byteLength > MAX_RESUME_SIZE) {
+      return { url: null, warning: "Resume file too large (exceeds 50MB limit)" };
+    }
+
     const contentType = response.headers.get("content-type") || "application/pdf";
     const ext = contentType.includes("pdf") ? "pdf" : "doc";
     const storagePath = `files/${candidateId}/resume.${ext}`;
@@ -215,21 +227,23 @@ async function uploadResumeToSupabase(
     );
 
     if (!uploadResponse.ok) {
-      console.warn("Failed to upload resume to Supabase:", uploadResponse.status);
-      return null;
+      return { url: null, warning: `Resume upload failed (storage error ${uploadResponse.status})` };
     }
 
-    // Return public URL
-    return `${supabaseUrl}/storage/v1/object/public/candidate-files/${storagePath}`;
+    return {
+      url: `${supabaseUrl}/storage/v1/object/public/candidate-files/${storagePath}`,
+    };
   } catch (err) {
     console.warn("Resume upload failed:", err);
-    return null;
+    return { url: null, warning: "Resume upload failed unexpectedly" };
   }
 }
 
 export const importCandidate = action({
   args: { manatalId: v.number() },
   handler: async (ctx, args) => {
+    const warnings: string[] = [];
+
     // 1. Check duplicate
     const existing = await ctx.runQuery(api.candidates.getByManatalId, {
       manatalId: args.manatalId,
@@ -240,52 +254,72 @@ export const importCandidate = action({
 
     const apiKey = getApiKey();
 
-    // 2-4. Fetch candidate, educations, experiences in parallel
-    const [candidateRes, educationsRes, experiencesRes] = await Promise.all([
-      manatalFetch(`/candidates/${args.manatalId}/`, apiKey),
-      manatalFetch(`/candidates/${args.manatalId}/educations/`, apiKey),
-      manatalFetch(`/candidates/${args.manatalId}/experiences/`, apiKey),
-    ]);
-
+    // 2. Fetch candidate (required)
+    const candidateRes = await manatalFetch(
+      `/candidates/${args.manatalId}/`,
+      apiKey
+    );
     const candidate = await candidateRes.json();
-    const educationsData = await educationsRes.json();
-    const experiencesData = await experiencesRes.json();
 
-    const educations: ManatalEducation[] = educationsData.results ?? educationsData ?? [];
-    const experiences: ManatalExperience[] = experiencesData.results ?? experiencesData ?? [];
+    // 3-4. Fetch educations and experiences (optional — partial import on failure)
+    let educations: ManatalEducation[] = [];
+    let experiences: ManatalExperience[] = [];
+
+    try {
+      const [educationsRes, experiencesRes] = await Promise.all([
+        manatalFetch(`/candidates/${args.manatalId}/educations/`, apiKey),
+        manatalFetch(`/candidates/${args.manatalId}/experiences/`, apiKey),
+      ]);
+      const educationsData = await educationsRes.json();
+      const experiencesData = await experiencesRes.json();
+      educations = Array.isArray(educationsData)
+        ? educationsData
+        : educationsData?.results ?? [];
+      experiences = Array.isArray(experiencesData)
+        ? experiencesData
+        : experiencesData?.results ?? [];
+    } catch {
+      warnings.push("Could not fetch education/experience data");
+    }
 
     // 5. Build summary
     const summary = buildSummary(candidate.description, educations, experiences);
 
     // 6-7. Create candidate in Convex
-    const candidateId: Id<"candidates"> = await ctx.runMutation(api.candidates.create, {
-      fullName: candidate.full_name || "Unknown",
-      email: candidate.email || undefined,
-      phone: candidate.phone_number || undefined,
-      currentRole: candidate.current_position || undefined,
-      currentCompany: candidate.current_company || undefined,
-      summary: summary || undefined,
-      manatalUrl: `https://app.manatal.com/candidates/${args.manatalId}`,
-      manatalId: args.manatalId,
-      manatalImportedAt: Date.now(),
-    });
+    const candidateId: Id<"candidates"> = await ctx.runMutation(
+      api.candidates.create,
+      {
+        fullName: candidate.full_name || "Unknown",
+        email: candidate.email || undefined,
+        phone: candidate.phone_number || undefined,
+        currentRole: candidate.current_position || undefined,
+        currentCompany: candidate.current_company || undefined,
+        summary: summary || undefined,
+        manatalUrl: `https://app.manatal.com/candidates/${args.manatalId}`,
+        manatalId: args.manatalId,
+        manatalImportedAt: Date.now(),
+      }
+    );
 
     // 8. Download and upload resume if available
+    let hasResume = false;
     if (candidate.resume) {
-      const fileUrl = await uploadResumeToSupabase(
-        candidate.resume,
-        candidateId
-      );
-      if (fileUrl) {
+      const result = await uploadResumeToSupabase(candidate.resume, candidateId);
+      if (result.url) {
         await ctx.runMutation(api.candidateFiles.create, {
           candidateId,
-          fileUrl,
+          fileUrl: result.url,
           fileName: "resume.pdf",
           fileType: "application/pdf",
         });
+        hasResume = true;
+      } else if (result.warning) {
+        warnings.push(result.warning);
       }
+    } else {
+      warnings.push("No resume available in Manatal");
     }
 
-    return { candidateId, success: true };
+    return { candidateId, success: true, hasResume, warnings };
   },
 });

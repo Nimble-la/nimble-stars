@@ -65,9 +65,13 @@ export function ManatalCandidateCard({
           disabled={importing}
         >
           {importing ? (
-            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-          ) : null}
-          Import
+            <>
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              Importing...
+            </>
+          ) : (
+            "Import"
+          )}
         </Button>
       )}
     </div>
