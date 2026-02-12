@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ManatalCandidateCard } from "./manatal-candidate-card";
 import { Search, X, Loader2, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import type { ManatalCandidate } from "@/lib/types/manatal";
 
 interface ManatalSearchProps {
@@ -92,9 +93,15 @@ export function ManatalSearch({
     setImportingId(manatalId);
     try {
       await onImport(manatalId);
+      toast.success("Candidate imported successfully");
       onImported?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Import failed");
+      const message = err instanceof Error ? err.message : "Import failed";
+      if (message.includes("already been imported")) {
+        toast.warning("This candidate has already been imported");
+      } else {
+        toast.error(message);
+      }
     } finally {
       setImportingId(null);
     }

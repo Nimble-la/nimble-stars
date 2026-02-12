@@ -70,6 +70,8 @@ export const create = mutation({
     currentCompany: v.optional(v.string()),
     summary: v.optional(v.string()),
     manatalUrl: v.optional(v.string()),
+    manatalId: v.optional(v.number()),
+    manatalImportedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -81,6 +83,8 @@ export const create = mutation({
       currentCompany: args.currentCompany,
       summary: args.summary,
       manatalUrl: args.manatalUrl,
+      manatalId: args.manatalId,
+      manatalImportedAt: args.manatalImportedAt,
       createdAt: now,
       updatedAt: now,
     });
