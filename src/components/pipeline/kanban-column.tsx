@@ -44,6 +44,11 @@ export function KanbanColumn({
               snapshot.isDraggingOver ? "bg-muted/80" : ""
             }`}
           >
+            {candidates.length === 0 && !snapshot.isDraggingOver && (
+              <p className="py-4 text-center text-xs text-muted-foreground">
+                No candidates
+              </p>
+            )}
             {candidates.map((candidate, index) => (
               <Draggable
                 key={candidate._id}

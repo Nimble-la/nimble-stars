@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth/auth-context";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Briefcase } from "lucide-react";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
 const STAGE_LABELS: Record<string, { label: string; color: string }> = {
@@ -49,9 +51,11 @@ export default function PositionsPage() {
           ))}
         </div>
       ) : positions.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-muted-foreground">No open positions at the moment.</p>
-        </div>
+        <EmptyState
+          icon={Briefcase}
+          title="No open positions"
+          description="There are no open positions at the moment. Check back soon."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {positions.map((pos) => (

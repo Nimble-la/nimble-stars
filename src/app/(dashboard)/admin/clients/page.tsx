@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus } from "lucide-react";
+import { Plus, Building2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString("en-US", {
@@ -50,11 +51,12 @@ export default function ClientsPage() {
           ))}
         </div>
       ) : organizations.length === 0 ? (
-        <div className="rounded-md border p-8 text-center">
-          <p className="text-muted-foreground">
-            No clients yet. Create your first client to get started.
-          </p>
-        </div>
+        <EmptyState
+          icon={Building2}
+          title="No clients yet"
+          description="Create your first client to get started."
+          action={{ label: "New Client", onClick: () => router.push("/admin/clients/new") }}
+        />
       ) : (
         <Table>
           <TableHeader>

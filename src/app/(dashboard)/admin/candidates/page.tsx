@@ -15,7 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString("en-US", {
@@ -60,11 +61,12 @@ export default function CandidatesPage() {
           ))}
         </div>
       ) : candidates.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-muted-foreground">
-            {search ? "No candidates match your search." : "No candidates yet."}
-          </p>
-        </div>
+        <EmptyState
+          icon={search ? Search : Users}
+          title={search ? "No results found" : "No candidates yet"}
+          description={search ? "Try a different search term." : "Add your first candidate to the bank."}
+          action={!search ? { label: "New Candidate", onClick: () => router.push("/admin/candidates/new") } : undefined}
+        />
       ) : (
         <Table>
           <TableHeader>
