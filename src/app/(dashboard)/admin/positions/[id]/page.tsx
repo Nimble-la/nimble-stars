@@ -93,6 +93,7 @@ export default function PositionPipelinePage() {
     positionId: positionId as Id<"positions">,
   });
   const updateStage = useMutation(api.candidatePositions.updateStage);
+  const updateStatus = useMutation(api.positions.updateStatus);
 
   const handleStageChange = async (
     candidatePositionId: Id<"candidatePositions">,
@@ -148,6 +149,24 @@ export default function PositionPipelinePage() {
           >
             {position.status === "open" ? "Open" : "Closed"}
           </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const newStatus = position.status === "open" ? "closed" : "open";
+              try {
+                await updateStatus({
+                  positionId: positionId as Id<"positions">,
+                  status: newStatus,
+                });
+                toast.success(`Position ${newStatus === "open" ? "reopened" : "closed"}`);
+              } catch {
+                toast.error("Failed to update position status");
+              }
+            }}
+          >
+            {position.status === "open" ? "Close Position" : "Reopen Position"}
+          </Button>
         </div>
         <p className="text-sm text-muted-foreground">{position.orgName}</p>
         {position.description && (

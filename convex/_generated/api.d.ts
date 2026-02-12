@@ -14,6 +14,7 @@ import type * as candidateFiles from "../candidateFiles.js";
 import type * as candidatePositions from "../candidatePositions.js";
 import type * as candidates from "../candidates.js";
 import type * as comments from "../comments.js";
+import type * as emailTemplates from "../emailTemplates.js";
 import type * as emails from "../emails.js";
 import type * as manatal from "../manatal.js";
 import type * as notifications from "../notifications.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   candidatePositions: typeof candidatePositions;
   candidates: typeof candidates;
   comments: typeof comments;
+  emailTemplates: typeof emailTemplates;
   emails: typeof emails;
   manatal: typeof manatal;
   notifications: typeof notifications;

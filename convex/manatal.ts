@@ -115,6 +115,27 @@ export const getCandidateExperiences = action({
   },
 });
 
+export const listJobs = action({
+  args: {},
+  handler: async () => {
+    const apiKey = getApiKey();
+    const params = new URLSearchParams({
+      status: "active",
+      page_size: "100",
+    });
+    const response = await manatalFetch(`/jobs/?${params.toString()}`, apiKey);
+    const data = await response.json();
+    const results = Array.isArray(data) ? data : data?.results ?? [];
+    return {
+      results: results.map((job: { id: number; position_name?: string; title?: string; description?: string }) => ({
+        id: job.id,
+        title: job.position_name || job.title || "Untitled",
+        description: job.description || "",
+      })),
+    };
+  },
+});
+
 // --- Import flow ---
 
 interface ManatalEducation {
