@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,9 +18,9 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface SidebarProps {
-  logoUrl?: string | null;
   open: boolean;
   onClose: () => void;
 }
@@ -32,9 +35,17 @@ const clientLinks = [
   { href: "/positions", label: "Positions", icon: Briefcase },
 ];
 
-export function Sidebar({ logoUrl, open, onClose }: SidebarProps) {
+export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { user, role, signOut } = useAuth();
+  const { user, role, orgId, signOut } = useAuth();
+  const [logoError, setLogoError] = useState(false);
+
+  const isAdmin = role === "admin";
+  const org = useQuery(
+    api.organizations.getById,
+    !isAdmin && orgId ? { orgId: orgId as Id<"organizations"> } : "skip"
+  );
+  const logoUrl = isAdmin ? null : (org?.logoUrl ?? null);
 
   const links = role === "admin" ? adminLinks : clientLinks;
 
@@ -66,8 +77,15 @@ export function Sidebar({ logoUrl, open, onClose }: SidebarProps) {
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between px-6">
-          {logoUrl ? (
-            <Image src={logoUrl} alt="Logo" width={140} height={32} className="h-8 w-auto object-contain" />
+          {logoUrl && !logoError ? (
+            <Image
+              src={logoUrl}
+              alt="Logo"
+              width={140}
+              height={32}
+              className="h-8 w-auto object-contain"
+              onError={() => setLogoError(true)}
+            />
           ) : (
             <span className="text-xl font-bold tracking-tight">nimble</span>
           )}

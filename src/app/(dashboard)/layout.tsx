@@ -11,7 +11,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { role, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,12 +21,9 @@ export default function DashboardLayout({
     );
   }
 
-  const isAdmin = role === "admin";
-
   return (
     <div className="flex min-h-screen">
       <Sidebar
-        logoUrl={isAdmin ? null : undefined}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

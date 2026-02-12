@@ -165,3 +165,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Client-branded interactive elements */
+.client-btn {
+  background-color: var(--client-primary);
+  color: white;
+}
+.client-btn:hover {
+  background-color: var(--client-primary-hover);
+}
+.client-link {
+  color: var(--client-primary);
+}
+.client-link:hover {
+  opacity: 0.8;
+}
+.client-focus:focus-visible {
+  outline-color: var(--client-primary);
+}
+.client-active {
+  background-color: var(--client-primary-light);
+  color: var(--client-primary);
+}
