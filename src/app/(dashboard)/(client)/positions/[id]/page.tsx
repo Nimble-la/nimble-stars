@@ -117,6 +117,7 @@ export default function ClientPipelinePage() {
           <KanbanBoard
             candidates={candidates}
             onStageChange={handleStageChange}
+            onCandidateClick={handleCandidateClick}
           />
         ) : (
           <CandidateTable

@@ -24,9 +24,10 @@ const STAGES = [
 interface KanbanBoardProps {
   candidates: CandidateItem[];
   onStageChange: (candidatePositionId: Id<"candidatePositions">, newStage: string) => void;
+  onCandidateClick?: (candidateId: Id<"candidates">) => void;
 }
 
-export function KanbanBoard({ candidates, onStageChange }: KanbanBoardProps) {
+export function KanbanBoard({ candidates, onStageChange, onCandidateClick }: KanbanBoardProps) {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const { draggableId, destination } = result;
@@ -47,6 +48,7 @@ export function KanbanBoard({ candidates, onStageChange }: KanbanBoardProps) {
             label={stage.label}
             color={stage.color}
             candidates={candidates.filter((c) => c.stage === stage.id)}
+            onCandidateClick={onCandidateClick}
           />
         ))}
       </div>

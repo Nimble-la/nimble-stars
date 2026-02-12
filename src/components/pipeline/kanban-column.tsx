@@ -18,6 +18,7 @@ interface KanbanColumnProps {
   label: string;
   color: string;
   candidates: CandidateItem[];
+  onCandidateClick?: (candidateId: Id<"candidates">) => void;
 }
 
 export function KanbanColumn({
@@ -25,6 +26,7 @@ export function KanbanColumn({
   label,
   color,
   candidates,
+  onCandidateClick,
 }: KanbanColumnProps) {
   return (
     <div className="flex w-72 flex-shrink-0 flex-col rounded-lg bg-muted/50">
@@ -68,6 +70,7 @@ export function KanbanColumn({
                       candidateRole={candidate.candidateRole}
                       commentCount={candidate.commentCount}
                       lastInteractionAt={candidate.lastInteractionAt}
+                      onClick={onCandidateClick ? () => onCandidateClick(candidate.candidateId) : undefined}
                     />
                   </div>
                 )}
