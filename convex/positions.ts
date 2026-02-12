@@ -48,7 +48,31 @@ export const listOpenByOrg = query({
       .query("positions")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
-    return positions.filter((p) => p.status === "open");
+
+    const openPositions = positions.filter((p) => p.status === "open");
+
+    const withStageCounts = await Promise.all(
+      openPositions.map(async (pos) => {
+        const cps = await ctx.db
+          .query("candidatePositions")
+          .withIndex("by_position", (q) => q.eq("positionId", pos._id))
+          .collect();
+        const stageCounts = {
+          submitted: 0,
+          to_interview: 0,
+          approved: 0,
+          rejected: 0,
+        };
+        for (const cp of cps) {
+          if (cp.stage in stageCounts) {
+            stageCounts[cp.stage as keyof typeof stageCounts]++;
+          }
+        }
+        return { ...pos, candidateCount: cps.length, stageCounts };
+      })
+    );
+
+    return withStageCounts;
   },
 });
 
