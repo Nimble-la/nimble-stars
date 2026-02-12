@@ -20,61 +20,18 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StageBadge, STAGE_CONFIG } from "@/components/pipeline/stage-badge";
+import { StageBadge } from "@/components/pipeline/stage-badge";
 import { Copy, FileIcon, Download } from "lucide-react";
 import { CommentList } from "@/components/comments/comment-list";
 import { CommentForm } from "@/components/comments/comment-form";
+import { ActivityTimeline } from "@/components/activity/activity-timeline";
 import { useAuth } from "@/lib/auth/auth-context";
 import { toast } from "sonner";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
   toast.success("Copied to clipboard");
-}
-
-function ActivitySection({ candidatePositionId }: { candidatePositionId: Id<"candidatePositions"> }) {
-  const activities = useQuery(api.activityLog.listByCandidatePosition, {
-    candidatePositionId,
-  });
-
-  if (activities === undefined) return <Skeleton className="h-20 w-full" />;
-  if (activities.length === 0) return <p className="text-sm text-muted-foreground">No activity yet.</p>;
-
-  return (
-    <div className="space-y-3">
-      {activities.map((a) => {
-        const fromLabel = a.fromStage ? STAGE_CONFIG[a.fromStage]?.label ?? a.fromStage : null;
-        const toLabel = a.toStage ? STAGE_CONFIG[a.toStage]?.label ?? a.toStage : null;
-        return (
-          <div key={a._id} className="flex items-start gap-3 text-sm">
-            <div className="mt-1 h-2 w-2 rounded-full bg-muted-foreground" />
-            <div className="flex-1">
-              <p>
-                <span className="font-medium">{a.userName}</span>{" "}
-                {a.action === "assigned"
-                  ? "assigned this candidate"
-                  : a.action === "stage_change"
-                    ? <>moved from {fromLabel} to {toLabel}</>
-                    : a.action}
-              </p>
-              <p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 export default function ClientCandidateProfilePage() {
@@ -250,7 +207,7 @@ export default function ClientCandidateProfilePage() {
         <TabsContent value="activity" className="mt-4">
           <Card>
             <CardContent className="pt-6">
-              <ActivitySection candidatePositionId={candidatePositionId as Id<"candidatePositions">} />
+              <ActivityTimeline candidatePositionId={candidatePositionId as Id<"candidatePositions">} />
             </CardContent>
           </Card>
         </TabsContent>
