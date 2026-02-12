@@ -67,7 +67,8 @@ export default defineSchema({
   })
     .index("by_position", ["positionId"])
     .index("by_candidate", ["candidateId"])
-    .index("by_position_and_candidate", ["positionId", "candidateId"]),
+    .index("by_position_and_candidate", ["positionId", "candidateId"])
+    .index("by_stage", ["stage"]),
 
   comments: defineTable({
     body: v.string(),
@@ -84,7 +85,9 @@ export default defineSchema({
     userName: v.string(),
     candidatePositionId: v.id("candidatePositions"),
     createdAt: v.number(),
-  }).index("by_candidate_position", ["candidatePositionId"]),
+  })
+    .index("by_candidate_position", ["candidatePositionId"])
+    .index("by_created_at", ["createdAt"]),
 
   notifications: defineTable({
     type: v.union(

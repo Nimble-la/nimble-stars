@@ -40,12 +40,12 @@ export const getOverview = query({
     const positions = await ctx.db.query("positions").collect();
     const openPositions = positions.filter((p) => p.status === "open").length;
 
-    // Average time to hire (createdAt → approval)
+    // Average time to hire (createdAt → approval), sample up to 100
     const approvedCPs = currentCPs.filter((cp) => cp.stage === "approved");
     let avgTimeToHire = 0;
     if (approvedCPs.length > 0) {
       const approvalTimes: number[] = [];
-      for (const cp of approvedCPs) {
+      for (const cp of approvedCPs.slice(0, 100)) {
         const logs = await ctx.db
           .query("activityLog")
           .withIndex("by_candidate_position", (q) =>
@@ -174,7 +174,10 @@ export const getStageBottlenecks = query({
       rejected: [],
     };
 
-    for (const cp of cps) {
+    // Sample up to 200 CPs to keep activity log lookups reasonable
+    const sampled = cps.slice(0, 200);
+
+    for (const cp of sampled) {
       const logs = await ctx.db
         .query("activityLog")
         .withIndex("by_candidate_position", (q) =>
@@ -229,25 +232,32 @@ export const getClientActivity = query({
   },
   handler: async (ctx, args) => {
     const orgs = await ctx.db.query("organizations").collect();
+    const allPositions = await ctx.db.query("positions").collect();
+
+    // Fetch CPs once and share across all orgs
+    const allCPs = await ctx.db
+      .query("candidatePositions")
+      .order("desc")
+      .take(5000);
+    const dateCPs = allCPs.filter(
+      (cp) => cp.createdAt >= args.dateFrom && cp.createdAt <= args.dateTo
+    );
+
+    // Build position → org mapping
+    const positionToOrg = new Map<string, string>();
+    for (const p of allPositions) {
+      positionToOrg.set(p._id, p.orgId);
+    }
 
     const results = await Promise.all(
       orgs.map(async (org) => {
-        // Open positions for this org
-        const positions = await ctx.db
-          .query("positions")
-          .withIndex("by_org", (q) => q.eq("orgId", org._id))
-          .collect();
-        const openPositions = positions.filter((p) => p.status === "open").length;
-        const positionIds = new Set(positions.map((p) => p._id));
+        const orgPositions = allPositions.filter((p) => p.orgId === org._id);
+        const openPositions = orgPositions.filter(
+          (p) => p.status === "open"
+        ).length;
+        const positionIds = new Set(orgPositions.map((p) => p._id));
 
-        // Candidate positions within date range
-        const allCPs = await ctx.db.query("candidatePositions").order("desc").take(5000);
-        const orgCPs = allCPs.filter(
-          (cp) =>
-            positionIds.has(cp.positionId) &&
-            cp.createdAt >= args.dateFrom &&
-            cp.createdAt <= args.dateTo
-        );
+        const orgCPs = dateCPs.filter((cp) => positionIds.has(cp.positionId));
 
         // Users in this org
         const orgUsers = await ctx.db
@@ -264,16 +274,16 @@ export const getClientActivity = query({
           }
         }
 
-        // Average response time: assignment → first client action
+        // Average response time: assignment → first client action (sample up to 50)
         const responseTimes: number[] = [];
-        for (const cp of orgCPs.slice(0, 100)) {
+        const clientUserIds = new Set(clientUsers.map((u) => u._id));
+        for (const cp of orgCPs.slice(0, 50)) {
           const logs = await ctx.db
             .query("activityLog")
             .withIndex("by_candidate_position", (q) =>
               q.eq("candidatePositionId", cp._id)
             )
             .collect();
-          const clientUserIds = new Set(clientUsers.map((u) => u._id));
           const firstClientAction = logs
             .filter((l) => clientUserIds.has(l.userId))
             .sort((a, b) => a.createdAt - b.createdAt)[0];
