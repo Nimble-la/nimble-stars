@@ -8,7 +8,7 @@ import {
   useRef,
   ReactNode,
 } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { createClient } from "@/lib/supabase/client";
 import type { Session, User as SupabaseUser, SupabaseClient } from "@supabase/supabase-js";
@@ -77,6 +77,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api.users.getBySupabaseId,
     supabaseUser?.id ? { supabaseUserId: supabaseUser.id } : "skip"
   ) as ConvexUser | null | undefined;
+
+  const recordLogin = useMutation(api.users.recordLogin);
+  const loginRecordedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (convexUser && loginRecordedRef.current !== convexUser._id) {
+      loginRecordedRef.current = convexUser._id;
+      recordLogin({ userId: convexUser._id as never }).catch(() => {
+        // silently ignore login tracking errors
+      });
+    }
+  }, [convexUser, recordLogin]);
 
   const user = convexUser ?? null;
   const role = user?.role ?? null;

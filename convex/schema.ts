@@ -17,6 +17,7 @@ export default defineSchema({
     supabaseUserId: v.string(),
     isActive: v.boolean(),
     createdAt: v.number(),
+    lastLoginAt: v.optional(v.number()),
   })
     .index("by_org", ["orgId"])
     .index("by_supabase_id", ["supabaseUserId"]),

@@ -78,6 +78,50 @@ export const update = mutation({
   },
 });
 
+export const recordLogin = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return;
+
+    const now = Date.now();
+    const ONE_HOUR = 60 * 60 * 1000;
+
+    await ctx.db.patch(args.userId, { lastLoginAt: now });
+
+    // Only create notification for client logins, debounced to 1 per hour
+    if (user.role === "client") {
+      const shouldNotify = !user.lastLoginAt || now - user.lastLoginAt > ONE_HOUR;
+      if (shouldNotify) {
+        // Get org name for the notification message
+        let orgName = "Unknown";
+        if (user.orgId) {
+          const org = await ctx.db.get(user.orgId);
+          if (org) orgName = org.name;
+        }
+
+        // Notify all admin users
+        const admins = await ctx.db
+          .query("users")
+          .filter((q) => q.eq(q.field("role"), "admin"))
+          .collect();
+
+        await Promise.all(
+          admins.map((admin) =>
+            ctx.db.insert("notifications", {
+              type: "client_login",
+              message: `${user.name} from ${orgName} logged in`,
+              isRead: false,
+              userId: admin._id,
+              createdAt: now,
+            })
+          )
+        );
+      }
+    }
+  },
+});
+
 export const updateSupabaseId = mutation({
   args: {
     userId: v.id("users"),
