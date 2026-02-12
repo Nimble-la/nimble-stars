@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
 import "./globals.css";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <ConvexClientProvider>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
         </ConvexClientProvider>
       </body>
     </html>

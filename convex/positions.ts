@@ -31,6 +31,17 @@ export const listByOrg = query({
   },
 });
 
+export const listOpenByOrg = query({
+  args: { orgId: v.id("organizations") },
+  handler: async (ctx, args) => {
+    const positions = await ctx.db
+      .query("positions")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .collect();
+    return positions.filter((p) => p.status === "open");
+  },
+});
+
 export const create = mutation({
   args: {
     title: v.string(),

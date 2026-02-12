@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const countAll = query({
@@ -30,5 +30,48 @@ export const listByCandidate = query({
     );
 
     return withDetails;
+  },
+});
+
+export const assign = mutation({
+  args: {
+    candidateId: v.id("candidates"),
+    positionId: v.id("positions"),
+    userId: v.id("users"),
+    userName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Check for duplicate assignment
+    const existing = await ctx.db
+      .query("candidatePositions")
+      .withIndex("by_position_and_candidate", (q) =>
+        q.eq("positionId", args.positionId).eq("candidateId", args.candidateId)
+      )
+      .unique();
+
+    if (existing) {
+      throw new Error("Candidate is already assigned to this position");
+    }
+
+    const now = Date.now();
+    const cpId = await ctx.db.insert("candidatePositions", {
+      candidateId: args.candidateId,
+      positionId: args.positionId,
+      stage: "submitted",
+      createdAt: now,
+      updatedAt: now,
+      lastInteractionAt: now,
+    });
+
+    // Create activity log entry
+    await ctx.db.insert("activityLog", {
+      action: "assigned",
+      userId: args.userId,
+      userName: args.userName,
+      candidatePositionId: cpId,
+      createdAt: now,
+    });
+
+    return cpId;
   },
 });

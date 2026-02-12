@@ -39,6 +39,7 @@ import {
   Download,
 } from "lucide-react";
 import { uploadFile } from "@/lib/supabase/storage";
+import { AssignCandidateDialog } from "@/components/admin/assign-candidate-dialog";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -325,6 +326,10 @@ export default function CandidateDetailPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Assigned Positions</CardTitle>
+          <AssignCandidateDialog
+            candidateId={candidate._id}
+            candidateName={candidate.fullName}
+          />
         </CardHeader>
         <CardContent>
           {assignments === undefined ? (
