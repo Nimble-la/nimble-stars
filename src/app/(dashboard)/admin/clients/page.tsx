@@ -58,6 +58,7 @@ export default function ClientsPage() {
           action={{ label: "New Client", onClick: () => router.push("/admin/clients/new") }}
         />
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -113,6 +114,7 @@ export default function ClientsPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

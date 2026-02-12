@@ -99,11 +99,11 @@ export default function ClientCandidateProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <Avatar className="h-16 w-16">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <Avatar className="h-16 w-16 shrink-0">
           <AvatarFallback className="text-xl">{initials}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold">{candidate.fullName}</h1>
           {(candidate.currentRole || candidate.currentCompany) && (
             <p className="text-muted-foreground">
@@ -112,7 +112,7 @@ export default function ClientCandidateProfilePage() {
               {candidate.currentCompany}
             </p>
           )}
-          <div className="mt-2 flex items-center gap-4 text-sm">
+          <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
             {candidate.email && (
               <button
                 className="flex items-center gap-1 text-muted-foreground hover:text-foreground"

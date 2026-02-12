@@ -164,6 +164,7 @@ export function PositionManagement({ orgId, positions }: PositionManagementProps
       {positions.length === 0 ? (
         <p className="text-sm text-muted-foreground">No positions yet.</p>
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -216,6 +217,7 @@ export function PositionManagement({ orgId, positions }: PositionManagementProps
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

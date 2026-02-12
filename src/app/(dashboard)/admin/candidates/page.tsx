@@ -68,6 +68,7 @@ export default function CandidatesPage() {
           action={!search ? { label: "New Candidate", onClick: () => router.push("/admin/candidates/new") } : undefined}
         />
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -106,6 +107,7 @@ export default function CandidatesPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

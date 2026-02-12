@@ -62,7 +62,7 @@ export function CandidateTable({ candidates, onRowClick }: CandidateTableProps) 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Select value={stageFilter} onValueChange={setStageFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by stage" />
@@ -89,6 +89,7 @@ export function CandidateTable({ candidates, onRowClick }: CandidateTableProps) 
       {sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">No candidates to show.</p>
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -127,6 +128,7 @@ export function CandidateTable({ candidates, onRowClick }: CandidateTableProps) 
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );
