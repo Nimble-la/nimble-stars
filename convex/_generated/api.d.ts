@@ -3,6 +3,7 @@
  */
 import type { ApiFromModules } from "convex/server";
 import type * as activityLog from "../activityLog";
+import type * as candidateFiles from "../candidateFiles";
 import type * as candidatePositions from "../candidatePositions";
 import type * as candidates from "../candidates";
 import type * as organizations from "../organizations";
@@ -14,6 +15,7 @@ import type * as users from "../users";
  */
 declare const fullApi: ApiFromModules<{
   activityLog: typeof activityLog;
+  candidateFiles: typeof candidateFiles;
   candidatePositions: typeof candidatePositions;
   candidates: typeof candidates;
   organizations: typeof organizations;
