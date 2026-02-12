@@ -13,6 +13,7 @@ import type * as candidateFiles from "../candidateFiles.js";
 import type * as candidatePositions from "../candidatePositions.js";
 import type * as candidates from "../candidates.js";
 import type * as comments from "../comments.js";
+import type * as emails from "../emails.js";
 import type * as notifications from "../notifications.js";
 import type * as organizations from "../organizations.js";
 import type * as positions from "../positions.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   candidatePositions: typeof candidatePositions;
   candidates: typeof candidates;
   comments: typeof comments;
+  emails: typeof emails;
   notifications: typeof notifications;
   organizations: typeof organizations;
   positions: typeof positions;

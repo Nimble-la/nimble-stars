@@ -99,4 +99,16 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_unread", ["userId", "isRead"]),
+
+  emailLog: defineTable({
+    to: v.string(),
+    subject: v.string(),
+    templateName: v.string(),
+    relatedEventType: v.string(),
+    relatedCandidatePositionId: v.optional(v.id("candidatePositions")),
+    sentAt: v.number(),
+    resendMessageId: v.optional(v.string()),
+    status: v.union(v.literal("sent"), v.literal("failed")),
+    error: v.optional(v.string()),
+  }).index("by_event", ["relatedEventType", "relatedCandidatePositionId"]),
 });
