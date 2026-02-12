@@ -9,6 +9,7 @@
  */
 
 import type * as activityLog from "../activityLog.js";
+import type * as analytics from "../analytics.js";
 import type * as candidateFiles from "../candidateFiles.js";
 import type * as candidatePositions from "../candidatePositions.js";
 import type * as candidates from "../candidates.js";
@@ -29,6 +30,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   activityLog: typeof activityLog;
+  analytics: typeof analytics;
   candidateFiles: typeof candidateFiles;
   candidatePositions: typeof candidatePositions;
   candidates: typeof candidates;
