@@ -38,9 +38,11 @@ export default defineSchema({
     currentCompany: v.optional(v.string()),
     summary: v.optional(v.string()),
     manatalUrl: v.optional(v.string()),
+    manatalId: v.optional(v.number()),
+    manatalImportedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }),
+  }).index("by_manatal_id", ["manatalId"]),
 
   candidateFiles: defineTable({
     candidateId: v.id("candidates"),

@@ -44,6 +44,16 @@ export const list = query({
   },
 });
 
+export const getByManatalId = query({
+  args: { manatalId: v.number() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("candidates")
+      .withIndex("by_manatal_id", (q) => q.eq("manatalId", args.manatalId))
+      .unique();
+  },
+});
+
 export const getById = query({
   args: { candidateId: v.id("candidates") },
   handler: async (ctx, args) => {
