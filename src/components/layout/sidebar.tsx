@@ -15,6 +15,7 @@ import {
   Users,
   Briefcase,
   Bell,
+  BarChart3,
   LogOut,
   X,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const adminLinks = [
   { href: "/admin/alerts", label: "Alerts", icon: Bell },
   { href: "/admin/clients", label: "Clients", icon: Building2 },
   { href: "/admin/candidates", label: "Candidates", icon: Users },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const clientLinks = [
