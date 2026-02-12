@@ -101,9 +101,9 @@ For EVERY Linear issue, follow this exact workflow:
 ## Code Conventions
 
 - **Language**: All code, comments, commit messages, and branch names in English
-- **UI text**: Spanish (this is for Latin American clients)
-  - Stage names: Presentado, A Entrevistar, Aprobado, Rechazado
-  - Labels and buttons in Spanish where user-facing
+- **UI text**: English
+  - Stage names: Submitted, To Interview, Approved, Rejected
+  - Labels and buttons in English
 - **File structure**: Follow Next.js App Router conventions
   - `app/` — Pages and layouts
   - `components/` — Reusable UI components
@@ -138,13 +138,13 @@ candidates (global pool, shared across orgs)
   └── candidateFiles (uploaded documents)
 ```
 
-**Stages**: presentado → a_entrevistar → aprobado → rechazado
+**Stages**: submitted → to_interview → approved → rejected
 
 **Stage colors** (always fixed, never change with client branding):
-- Presentado: #3B82F6 (blue)
-- A Entrevistar: #F59E0B (amber)
-- Aprobado: #10B981 (green)
-- Rechazado: #EF4444 (red)
+- Submitted: #3B82F6 (blue)
+- To Interview: #F59E0B (amber)
+- Approved: #10B981 (green)
+- Rejected: #EF4444 (red)
 
 ## Security Rules
 

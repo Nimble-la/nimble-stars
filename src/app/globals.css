@@ -56,10 +56,10 @@
   --color-nimble-gray-900: #111827;
 
   /* Stage colors */
-  --color-stage-presentado: #3B82F6;
-  --color-stage-entrevistar: #F59E0B;
-  --color-stage-aprobado: #10B981;
-  --color-stage-rechazado: #EF4444;
+  --color-stage-submitted: #3B82F6;
+  --color-stage-interview: #F59E0B;
+  --color-stage-approved: #10B981;
+  --color-stage-rejected: #EF4444;
 
   /* Client theming */
   --color-client-primary: var(--client-primary);
@@ -112,10 +112,10 @@
   --nimble-gray-900: #111827;
 
   /* Stage colors (fixed, never change with client branding) */
-  --stage-presentado: #3B82F6;
-  --stage-entrevistar: #F59E0B;
-  --stage-aprobado: #10B981;
-  --stage-rechazado: #EF4444;
+  --stage-submitted: #3B82F6;
+  --stage-interview: #F59E0B;
+  --stage-approved: #10B981;
+  --stage-rejected: #EF4444;
 
   /* Client theming (overridden per organization) */
   --client-primary: #3B82F6;

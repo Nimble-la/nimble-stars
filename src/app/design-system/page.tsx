@@ -91,28 +91,28 @@ export default function DesignSystemPage() {
             Nimble S.T.A.R.S — Design System
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Componentes shadcn/ui y variables de tema del proyecto.
+            shadcn/ui components and project theme variables.
           </p>
         </div>
 
         {/* Stage Colors */}
-        <Section title="Colores de Etapa">
+        <Section title="Stage Colors">
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-stage-presentado" />
-              <span className="text-sm">Presentado (#3B82F6)</span>
+              <div className="h-8 w-8 rounded-md bg-stage-submitted" />
+              <span className="text-sm">Submitted (#3B82F6)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-stage-entrevistar" />
-              <span className="text-sm">A Entrevistar (#F59E0B)</span>
+              <div className="h-8 w-8 rounded-md bg-stage-interview" />
+              <span className="text-sm">To Interview (#F59E0B)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-stage-aprobado" />
-              <span className="text-sm">Aprobado (#10B981)</span>
+              <div className="h-8 w-8 rounded-md bg-stage-approved" />
+              <span className="text-sm">Approved (#10B981)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-stage-rechazado" />
-              <span className="text-sm">Rechazado (#EF4444)</span>
+              <div className="h-8 w-8 rounded-md bg-stage-rejected" />
+              <span className="text-sm">Rejected (#EF4444)</span>
             </div>
           </div>
         </Section>
@@ -174,20 +174,20 @@ export default function DesignSystemPage() {
         {/* Input */}
         <Section title="Input">
           <div className="flex flex-col gap-4 max-w-sm">
-            <Input placeholder="Escribe algo..." />
+            <Input placeholder="Type something..." />
             <Input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Input controlado"
+              placeholder="Controlled input"
             />
-            <Input disabled placeholder="Deshabilitado" />
+            <Input disabled placeholder="Disabled" />
           </div>
         </Section>
 
         {/* Textarea */}
         <Section title="Textarea">
           <div className="max-w-sm">
-            <Textarea placeholder="Escribe un comentario..." />
+            <Textarea placeholder="Write a comment..." />
           </div>
         </Section>
 
@@ -196,13 +196,13 @@ export default function DesignSystemPage() {
           <div className="max-w-sm">
             <Select>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar etapa" />
+                <SelectValue placeholder="Select stage" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="presentado">Presentado</SelectItem>
-                <SelectItem value="a_entrevistar">A Entrevistar</SelectItem>
-                <SelectItem value="aprobado">Aprobado</SelectItem>
-                <SelectItem value="rechazado">Rechazado</SelectItem>
+                <SelectItem value="submitted">Submitted</SelectItem>
+                <SelectItem value="to_interview">To Interview</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -215,17 +215,17 @@ export default function DesignSystemPage() {
             <Badge variant="secondary">Secondary</Badge>
             <Badge variant="destructive">Destructive</Badge>
             <Badge variant="outline">Outline</Badge>
-            <Badge className="bg-stage-presentado text-white hover:bg-stage-presentado/90">
-              Presentado
+            <Badge className="bg-stage-submitted text-white hover:bg-stage-submitted/90">
+              Submitted
             </Badge>
-            <Badge className="bg-stage-entrevistar text-white hover:bg-stage-entrevistar/90">
-              A Entrevistar
+            <Badge className="bg-stage-interview text-white hover:bg-stage-interview/90">
+              To Interview
             </Badge>
-            <Badge className="bg-stage-aprobado text-white hover:bg-stage-aprobado/90">
-              Aprobado
+            <Badge className="bg-stage-approved text-white hover:bg-stage-approved/90">
+              Approved
             </Badge>
-            <Badge className="bg-stage-rechazado text-white hover:bg-stage-rechazado/90">
-              Rechazado
+            <Badge className="bg-stage-rejected text-white hover:bg-stage-rejected/90">
+              Rejected
             </Badge>
           </div>
         </Section>
@@ -251,24 +251,24 @@ export default function DesignSystemPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Candidato</CardTitle>
+                <CardTitle>Candidate</CardTitle>
                 <CardDescription>
-                  Información del candidato para la posición.
+                  Candidate information for the position.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Juan Pérez — Desarrollador Frontend Senior
+                  John Smith — Senior Frontend Developer
                 </p>
               </CardContent>
               <CardFooter>
-                <Button size="sm">Ver perfil</Button>
+                <Button size="sm">View profile</Button>
               </CardFooter>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Posición</CardTitle>
-                <CardDescription>Detalle de la posición abierta.</CardDescription>
+                <CardTitle>Position</CardTitle>
+                <CardDescription>Open position details.</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
@@ -276,7 +276,7 @@ export default function DesignSystemPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Badge className="bg-stage-aprobado text-white">Abierta</Badge>
+                <Badge className="bg-stage-approved text-white">Open</Badge>
               </CardFooter>
             </Card>
           </div>
@@ -287,52 +287,52 @@ export default function DesignSystemPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Posición</TableHead>
-                <TableHead>Etapa</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Position</TableHead>
+                <TableHead>Stage</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell>Juan Pérez</TableCell>
+                <TableCell>John Smith</TableCell>
                 <TableCell>Frontend Developer</TableCell>
                 <TableCell>
-                  <Badge className="bg-stage-presentado text-white">
-                    Presentado
+                  <Badge className="bg-stage-submitted text-white">
+                    Submitted
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm">
-                    Ver
+                    View
                   </Button>
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>María García</TableCell>
+                <TableCell>Jane Doe</TableCell>
                 <TableCell>Backend Developer</TableCell>
                 <TableCell>
-                  <Badge className="bg-stage-entrevistar text-white">
-                    A Entrevistar
+                  <Badge className="bg-stage-interview text-white">
+                    To Interview
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm">
-                    Ver
+                    View
                   </Button>
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Carlos López</TableCell>
+                <TableCell>Alex Johnson</TableCell>
                 <TableCell>UX Designer</TableCell>
                 <TableCell>
-                  <Badge className="bg-stage-aprobado text-white">
-                    Aprobado
+                  <Badge className="bg-stage-approved text-white">
+                    Approved
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm">
-                    Ver
+                    View
                   </Button>
                 </TableCell>
               </TableRow>
@@ -342,25 +342,25 @@ export default function DesignSystemPage() {
 
         {/* Tabs */}
         <Section title="Tabs">
-          <Tabs defaultValue="candidatos">
+          <Tabs defaultValue="candidates">
             <TabsList>
-              <TabsTrigger value="candidatos">Candidatos</TabsTrigger>
-              <TabsTrigger value="posiciones">Posiciones</TabsTrigger>
-              <TabsTrigger value="actividad">Actividad</TabsTrigger>
+              <TabsTrigger value="candidates">Candidates</TabsTrigger>
+              <TabsTrigger value="positions">Positions</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
-            <TabsContent value="candidatos" className="mt-4">
+            <TabsContent value="candidates" className="mt-4">
               <p className="text-sm text-muted-foreground">
-                Lista de candidatos asignados a esta posición.
+                List of candidates assigned to this position.
               </p>
             </TabsContent>
-            <TabsContent value="posiciones" className="mt-4">
+            <TabsContent value="positions" className="mt-4">
               <p className="text-sm text-muted-foreground">
-                Posiciones abiertas de la organización.
+                Open positions for the organization.
               </p>
             </TabsContent>
-            <TabsContent value="actividad" className="mt-4">
+            <TabsContent value="activity" className="mt-4">
               <p className="text-sm text-muted-foreground">
-                Historial de actividad reciente.
+                Recent activity history.
               </p>
             </TabsContent>
           </Tabs>
@@ -370,19 +370,19 @@ export default function DesignSystemPage() {
         <Section title="Dialog">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">Abrir diálogo</Button>
+              <Button variant="outline">Open dialog</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Confirmar acción</DialogTitle>
+                <DialogTitle>Confirm action</DialogTitle>
                 <DialogDescription>
-                  ¿Estás seguro de que deseas mover este candidato a la
-                  siguiente etapa?
+                  Are you sure you want to move this candidate to the next
+                  stage?
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline">Cancelar</Button>
-                <Button>Confirmar</Button>
+                <Button variant="outline">Cancel</Button>
+                <Button>Confirm</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -392,24 +392,24 @@ export default function DesignSystemPage() {
         <Section title="Sheet">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline">Abrir panel lateral</Button>
+              <Button variant="outline">Open side panel</Button>
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>Detalle del candidato</SheetTitle>
+                <SheetTitle>Candidate details</SheetTitle>
                 <SheetDescription>
-                  Información completa del candidato seleccionado.
+                  Full information for the selected candidate.
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-4 space-y-4">
                 <div>
-                  <p className="text-sm font-medium">Nombre</p>
-                  <p className="text-sm text-muted-foreground">Juan Pérez</p>
+                  <p className="text-sm font-medium">Name</p>
+                  <p className="text-sm text-muted-foreground">John Smith</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Email</p>
                   <p className="text-sm text-muted-foreground">
-                    juan@ejemplo.com
+                    john@example.com
                   </p>
                 </div>
               </div>
@@ -421,17 +421,17 @@ export default function DesignSystemPage() {
         <Section title="Dropdown Menu">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Opciones</Button>
+              <Button variant="outline">Options</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-              <DropdownMenuItem>Editar</DropdownMenuItem>
-              <DropdownMenuItem>Mover etapa</DropdownMenuItem>
+              <DropdownMenuItem>View profile</DropdownMenuItem>
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem>Change stage</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                Eliminar
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -441,10 +441,10 @@ export default function DesignSystemPage() {
         <Section title="Tooltip">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline">Hover sobre mí</Button>
+              <Button variant="outline">Hover over me</Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Este es un tooltip de ejemplo</p>
+              <p>This is a sample tooltip</p>
             </TooltipContent>
           </Tooltip>
         </Section>
@@ -452,9 +452,9 @@ export default function DesignSystemPage() {
         {/* Separator */}
         <Section title="Separator">
           <div className="space-y-2">
-            <p className="text-sm">Contenido arriba</p>
+            <p className="text-sm">Content above</p>
             <Separator />
-            <p className="text-sm">Contenido abajo</p>
+            <p className="text-sm">Content below</p>
           </div>
         </Section>
 
@@ -463,7 +463,7 @@ export default function DesignSystemPage() {
           <ScrollArea className="h-48 w-full rounded-md border p-4">
             {Array.from({ length: 20 }, (_, i) => (
               <div key={i} className="py-2 text-sm">
-                Elemento de lista #{i + 1} — Candidato de ejemplo
+                List item #{i + 1} — Sample candidate
               </div>
             ))}
           </ScrollArea>

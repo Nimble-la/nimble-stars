@@ -14,7 +14,7 @@ export default function Home() {
           href="/design-system"
           className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
         >
-          Ver Design System
+          View Design System
         </Link>
       </main>
     </div>

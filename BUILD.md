@@ -93,10 +93,10 @@ Design system variables to include:
   --nimble-gray-400: #9CA3AF;
   --nimble-gray-600: #4B5563;
   --nimble-gray-900: #111827;
-  --stage-presentado: #3B82F6;
-  --stage-entrevistar: #F59E0B;
-  --stage-aprobado: #10B981;
-  --stage-rechazado: #EF4444;
+  --stage-submitted: #3B82F6;
+  --stage-interview: #F59E0B;
+  --stage-approved: #10B981;
+  --stage-rejected: #EF4444;
   --client-primary: #3B82F6;
   --client-primary-hover: #2563EB;
   --client-primary-light: rgba(59, 130, 246, 0.1);
@@ -116,7 +116,7 @@ Initialize Convex as the backend.
   - positions: { title, description?, status (open | closed), orgId, createdAt }
   - candidates: { fullName, email?, phone?, currentRole?, currentCompany?, summary?, manatalUrl?, createdAt, updatedAt }
   - candidateFiles: { candidateId, fileUrl, fileName, fileType, uploadedAt }
-  - candidatePositions: { candidateId, positionId, stage (presentado | a_entrevistar | aprobado | rechazado), createdAt, updatedAt, lastInteractionAt }
+  - candidatePositions: { candidateId, positionId, stage (submitted | to_interview | approved | rejected), createdAt, updatedAt, lastInteractionAt }
   - comments: { body, userId, candidatePositionId, createdAt }
   - activityLog: { action, fromStage?, toStage?, userId, userName, candidatePositionId, createdAt }
 - Create convex/convex.config.ts if needed
@@ -386,7 +386,7 @@ First deployment — "Hello World" with auth.
 - Dialog/sheet component triggered from candidate detail:
   - Step 1: Select client (dropdown of organizations)
   - Step 2: Select position (dropdown of open positions for selected client)
-  - Step 3: Confirm → creates CandidatePosition with stage "presentado"
+  - Step 3: Confirm → creates CandidatePosition with stage "submitted"
   - Also creates an activity log entry: "Admin assigned [candidate] to this position"
 - Validation: prevent duplicate assignment (same candidate + same position)
 - Convex mutations:
@@ -401,7 +401,7 @@ First deployment — "Hello World" with auth.
   - Position header: title, client name, status badge, description
   - Two views (toggle): Kanban | List
   - Kanban view:
-    - 4 columns: Presentado | A Entrevistar | Aprobado | Rechazado
+    - 4 columns: Submitted | To Interview | Approved | Rejected
     - Candidate cards with: initials avatar, name, current role, comment count, last interaction
     - Drag & drop to change stage (updates candidatePosition + creates activity log)
     - Click card → navigate to candidate profile in position context
@@ -458,7 +458,7 @@ First deployment — "Hello World" with auth.
   - Position title header
   - View toggle: Kanban (default) | List
   - Kanban view:
-    - 4 columns: Presentado | A Entrevistar | Aprobado | Rechazado
+    - 4 columns: Submitted | To Interview | Approved | Rejected
     - Column colors: blue, amber, green, red
     - Candidate cards: initials avatar, name, current role, comment count, last interaction timestamp
     - Drag & drop to move between stages
@@ -516,9 +516,9 @@ First deployment — "Hello World" with auth.
 - Activity history component (reusable, used in candidate profile):
   - Timeline of all activity for this CandidatePosition
   - Entry types:
-    - Stage change: "🔄 [User] moved [Candidate] from [Stage A] to [Stage B] — [timestamp]"
-    - Comment: "💬 [User] left a comment — [timestamp]"
-    - Assignment: "📋 [Admin] assigned [Candidate] to this position — [timestamp]"
+    - Stage change: "[User] moved [Candidate] from [Stage A] to [Stage B] — [timestamp]"
+    - Comment: "[User] left a comment — [timestamp]"
+    - Assignment: "[Admin] assigned [Candidate] to this position — [timestamp]"
   - Ordered newest first
   - Timestamps as relative ("2 hours ago") with absolute on hover tooltip
   - Immutable — no edit/delete
@@ -763,10 +763,10 @@ export default defineSchema({
     candidateId: v.id("candidates"),
     positionId: v.id("positions"),
     stage: v.union(
-      v.literal("presentado"),
-      v.literal("a_entrevistar"),
-      v.literal("aprobado"),
-      v.literal("rechazado")
+      v.literal("submitted"),
+      v.literal("to_interview"),
+      v.literal("approved"),
+      v.literal("rejected")
     ),
     createdAt: v.number(),
     updatedAt: v.number(),

@@ -2,64 +2,64 @@
 
 > **S**ourcing **T**alent **A**nd **R**ecruiting **S**olutions
 >
-> Versión: 0.5
-> Fecha: 2025-02-11
-> Autor: Nimble.LA
-> Estado: En iteración
+> Version: 0.5
+> Date: 2025-02-11
+> Author: Nimble.LA
+> Status: In iteration
 
 ---
 
-## 1. Visión del Producto
+## 1. Product Vision
 
-Nimble S.T.A.R.S es una plataforma web liviana que permite a Nimble compartir perfiles de candidatos con sus clientes de forma organizada, profesional y colaborativa. Los clientes pueden revisar candidatos, dejar feedback, y mover candidatos a través de un pipeline simplificado — todo sin necesidad de acceder a herramientas internas de Nimble.
+Nimble S.T.A.R.S is a lightweight web platform that allows Nimble to share candidate profiles with their clients in an organized, professional, and collaborative way. Clients can review candidates, leave feedback, and move candidates through a simplified pipeline — all without needing access to Nimble's internal tools.
 
-### Problema que resuelve
+### Problem it solves
 
-Hoy la comunicación de candidatos con clientes se hace por email, docs compartidos o llamadas. Esto genera:
-- Pérdida de trazabilidad del feedback
-- Fricción para que el cliente revise candidatos
-- Falta de visibilidad sobre el estado de cada candidato
-- Dificultad para escalar el proceso con múltiples clientes y posiciones
+Today, candidate communication with clients happens via email, shared docs, or calls. This creates:
+- Loss of feedback traceability
+- Friction for clients when reviewing candidates
+- Lack of visibility on each candidate's status
+- Difficulty scaling the process with multiple clients and positions
 
-### Propuesta de valor
+### Value proposition
 
-Una interfaz simple y dedicada donde el cliente tiene todo en un solo lugar: candidatos, CVs, notas, y un pipeline claro para tomar decisiones. Cada cliente ve la plataforma con su propio branding, generando una experiencia white-label profesional.
+A simple, dedicated interface where the client has everything in one place: candidates, CVs, notes, and a clear pipeline for making decisions. Each client sees the platform with their own branding, creating a professional white-label experience.
 
 ---
 
-## 2. Usuarios y Roles
+## 2. Users and Roles
 
 ### 2.1 Admin (Nimble)
-- Acceso total al sistema
-- Crea y gestiona clientes (organizaciones) con branding personalizado
-- Crea usuarios para cada cliente
-- Crea posiciones y asigna candidatos
-- Sube archivos (CV, documentos) de cualquier tipo y tamaño
-- Ve todo el feedback y actividad de los clientes
-- Puede mover candidatos entre fases
-- Ve todas las posiciones (abiertas y cerradas)
-- Accede al link de Manatal de cada candidato (referencia interna)
+- Full system access
+- Creates and manages clients (organizations) with custom branding
+- Creates users for each client
+- Creates positions and assigns candidates
+- Uploads files (CV, documents) of any type and size
+- Sees all feedback and activity from clients
+- Can move candidates between stages
+- Sees all positions (open and closed)
+- Accesses each candidate's Manatal link (internal reference)
 
-### 2.2 Cliente
-- Acceso con usuario/contraseña
-- Ve solo las posiciones **abiertas** de su organización (las cerradas quedan ocultas)
-- Ve todos los datos del candidato: nombre, email, teléfono, resumen, archivos
-- Descarga archivos adjuntos del candidato
-- Deja comentarios y notas en cada candidato
-- Los comentarios son visibles para todos los usuarios de la misma organización (colaborativos)
-- Mueve candidatos entre fases del pipeline
-- Ve el historial de actividad (quién cambió qué y cuándo)
-- Puede haber múltiples usuarios por cliente/organización
-- Todos los usuarios de un mismo cliente tienen los mismos permisos (v1)
-- **No ve** el link de Manatal (es solo para uso interno de Nimble)
-- **No ve** posiciones cerradas
+### 2.2 Client
+- Access with username/password
+- Sees only **open** positions for their organization (closed ones are hidden)
+- Sees all candidate data: name, email, phone, summary, files
+- Downloads candidate attachments
+- Leaves comments and notes on each candidate
+- Comments are visible to all users in the same organization (collaborative)
+- Moves candidates between pipeline stages
+- Sees activity history (who changed what and when)
+- There can be multiple users per client/organization
+- All users within the same client have the same permissions (v1)
+- **Cannot see** the Manatal link (it's for Nimble's internal use only)
+- **Cannot see** closed positions
 
 ---
 
-## 3. Modelo de Datos (Conceptual)
+## 3. Data Model (Conceptual)
 
 ```
-Organization (Cliente)
+Organization (Client)
 ├── id, name, logo_url?, primary_color?, created_at
 │
 ├── Users (1..n)
@@ -68,11 +68,11 @@ Organization (Cliente)
 ├── Positions (1..n)
 │   ├── id, title, description?, status (open | closed), org_id, created_at
 │   │
-│   └── CandidatePositions (junction table — muchos a muchos)
+│   └── CandidatePositions (junction table — many to many)
 │       ├── id, candidate_id, position_id
-│       ├── stage: presentado | a_entrevistar | aprobado | rechazado
+│       ├── stage: submitted | to_interview | approved | rejected
 │       ├── created_at, updated_at
-│       ├── last_interaction_at (se actualiza con cada comentario o cambio de fase)
+│       ├── last_interaction_at (updated with each comment or stage change)
 │       │
 │       ├── Comments (0..n)
 │       │   └── id, body, user_id, candidate_position_id, created_at
@@ -80,168 +80,168 @@ Organization (Cliente)
 │       └── Activity Log (0..n)
 │           └── id, action, from_stage?, to_stage?, user_id, user_name, candidate_position_id, created_at
 
-Candidates (global, compartido entre orgs)
+Candidates (global, shared across orgs)
 ├── id, full_name, email?, phone?, current_role?, current_company?
-├── summary (texto breve sobre el candidato)
-├── files[] (array de archivos — CV, docs, cualquier tipo/tamaño)
+├── summary (brief text about the candidate)
+├── files[] (array of files — CV, docs, any type/size)
 │   └── { file_url, file_name, file_type, uploaded_at }
-├── manatal_url? (link a Manatal — solo visible para admins)
+├── manatal_url? (Manatal link — visible to admins only)
 ├── created_at, updated_at
 ```
 
-### Notas sobre el modelo
+### Notes on the model
 
-- **Organization** = un cliente de Nimble. Aísla completamente los datos visibles.
-- **Candidates** son entidades globales. Un mismo candidato puede estar asignado a múltiples posiciones en diferentes clientes.
-- **CandidatePosition** es la tabla de unión. El **stage**, **comentarios** y **actividad** viven acá — porque un mismo candidato puede estar en fase distinta en cada posición.
-- **last_interaction_at** en CandidatePosition se actualiza cada vez que alguien comenta o cambia la fase. Permite ordenar candidatos por última interacción.
-- **Activity Log** registra cada acción con el nombre del usuario, la acción realizada, y timestamp. Es visible tanto para admins como para clientes.
-- **Admin users** (Nimble) no pertenecen a una org — ven todo.
-- **manatal_url** es un campo opcional en el candidato, visible solo en el panel admin.
-- **logo_url** y **primary_color** en Organization permiten branding por cliente.
-- **files** es un array flexible: se pueden subir múltiples archivos de cualquier tipo y sin límite de tamaño.
+- **Organization** = a Nimble client. Completely isolates visible data.
+- **Candidates** are global entities. The same candidate can be assigned to multiple positions across different clients.
+- **CandidatePosition** is the junction table. The **stage**, **comments**, and **activity** live here — because the same candidate can be at a different stage in each position.
+- **last_interaction_at** in CandidatePosition is updated every time someone comments or changes the stage. Allows sorting candidates by last interaction.
+- **Activity Log** records each action with the user's name, the action performed, and timestamp. Visible to both admins and clients.
+- **Admin users** (Nimble) don't belong to an org — they see everything.
+- **manatal_url** is an optional field on the candidate, visible only in the admin panel.
+- **logo_url** and **primary_color** in Organization enable per-client branding.
+- **files** is a flexible array: multiple files of any type can be uploaded with no size limit.
 
 ---
 
-## 4. Funcionalidades — v1 (MVP)
+## 4. Features — v1 (MVP)
 
-### 4.1 Autenticación
-- Login con email/contraseña (Supabase Auth)
-- Dos roles: `admin` y `client`
-- El admin crea las cuentas de los clientes (no hay self-registration)
-- Sesiones con JWT
-- Redirect automático según rol después del login
+### 4.1 Authentication
+- Login with email/password (Supabase Auth)
+- Two roles: `admin` and `client`
+- Admin creates client accounts (no self-registration)
+- Sessions with JWT
+- Automatic redirect based on role after login
 
-### 4.2 Branding por Cliente
-- Cada organización tiene un **logo** y un **color principal** configurables
-- El cliente ve la plataforma con su logo en el header/sidebar y el color principal aplicado a elementos de UI (botones, acentos, links)
-- Los admins ven la plataforma con branding Nimble
-- El logo y color se configuran al dar de alta al cliente (y se pueden editar después)
+### 4.2 Client Branding
+- Each organization has a configurable **logo** and **primary color**
+- The client sees the platform with their logo in the header/sidebar and the primary color applied to UI elements (buttons, accents, links)
+- Admins see the platform with Nimble branding
+- Logo and color are configured when creating the client (and can be edited later)
 
-### 4.3 Panel Admin (Nimble)
+### 4.3 Admin Panel (Nimble)
 
-| Funcionalidad | Descripción |
+| Feature | Description |
 |---|---|
-| Dashboard | Vista general: clientes activos, posiciones abiertas, candidatos por fase |
-| Gestión de Clientes | CRUD de organizaciones (nombre, logo, color principal) |
-| Gestión de Usuarios | Crear/editar usuarios para cada cliente |
-| Gestión de Posiciones | Crear posiciones dentro de un cliente, abrir/cerrar posiciones |
-| Banco de Candidatos | Pool global de candidatos, con búsqueda. Crear candidato con datos + archivos + link Manatal |
-| Asignar Candidatos | Asignar un candidato existente a una o más posiciones (mismo o distinto cliente) |
-| Ver Actividad | Ver comentarios, cambios de fase y todo el historial de actividad |
-| Link Manatal | Acceso rápido al perfil del candidato en Manatal desde su ficha |
+| Dashboard | Overview: active clients, open positions, candidates by stage |
+| Client Management | CRUD for organizations (name, logo, primary color) |
+| User Management | Create/edit users for each client |
+| Position Management | Create positions within a client, open/close positions |
+| Candidate Bank | Global pool of candidates, with search. Create candidate with data + files + Manatal link |
+| Assign Candidates | Assign an existing candidate to one or more positions (same or different client) |
+| View Activity | See comments, stage changes, and full activity history |
+| Manatal Link | Quick access to the candidate's Manatal profile from their card |
 
-### 4.4 Panel Cliente — Flujo Principal
+### 4.4 Client Panel — Main Flow
 
-El flujo del cliente es lineal y simple:
+The client flow is linear and simple:
 
 ```
-Mis Posiciones (lista) → Posición (candidatos) → Perfil del Candidato (detalle + acciones)
+My Positions (list) → Position (candidates) → Candidate Profile (detail + actions)
 ```
 
-#### Paso 1: Mis Posiciones
-- Lista de posiciones **abiertas** de su organización
-- Cada posición muestra: título, cantidad de candidatos, y un resumen de candidatos por fase
+#### Step 1: My Positions
+- List of **open** positions for their organization
+- Each position shows: title, candidate count, and a summary of candidates by stage
 
-#### Paso 2: Candidatos de una Posición (dos vistas)
+#### Step 2: Candidates for a Position (two views)
 
-**Vista Kanban (default)**
-- Candidatos en columnas por fase: Presentado | A Entrevistar | Aprobado | Rechazado
-- Drag & drop para mover candidatos entre fases
-- Click en tarjeta para ir al detalle
+**Kanban View (default)**
+- Candidates in columns by stage: Submitted | To Interview | Approved | Rejected
+- Drag & drop to move candidates between stages
+- Click on card to go to detail
 
-**Vista Lista**
-- Tabla de candidatos con columnas: nombre, fase actual, fecha de carga, última interacción
-- **Filtrable por fase** (dropdown o tabs)
-- **Ordenable por**:
-  - Fecha de carga (created_at) — más nuevos primero por defecto
-  - Última interacción (last_interaction_at) — para ver quién tuvo actividad reciente
-- Click en fila para ir al detalle
+**List View**
+- Table of candidates with columns: name, current stage, date added, last interaction
+- **Filterable by stage** (dropdown or tabs)
+- **Sortable by**:
+  - Date added (created_at) — newest first by default
+  - Last interaction (last_interaction_at) — to see who had recent activity
+- Click on row to go to detail
 
-El usuario puede alternar entre vista Kanban y vista Lista con un toggle.
+The user can toggle between Kanban and List view with a toggle.
 
-#### Paso 3: Perfil del Candidato
-- **Datos completos**: nombre, email, teléfono, rol actual, empresa actual
-- **Resumen**: texto descriptivo del candidato
-- **Archivos**: lista de archivos adjuntos, descargables (CV, documentos, etc.)
-- **Fase actual**: indicador visual + botón/dropdown para cambiar fase
-- **Comentarios**: sección para leer y dejar notas (visibles para toda la org)
-- **Historial de actividad**: timeline cronológico mostrando:
-  - Quién cambió la fase, de qué fase a cuál, y cuándo
-  - Quién dejó un comentario y cuándo
-  - Cuándo fue asignado el candidato a la posición
+#### Step 3: Candidate Profile
+- **Full data**: name, email, phone, current role, current company
+- **Summary**: descriptive text about the candidate
+- **Files**: list of attachments, downloadable (CV, documents, etc.)
+- **Current stage**: visual indicator + button/dropdown to change stage
+- **Comments**: section to read and leave notes (visible to the entire org)
+- **Activity history**: chronological timeline showing:
+  - Who changed the stage, from which stage to which, and when
+  - Who left a comment and when
+  - When the candidate was assigned to the position
 
-### 4.5 Historial de Actividad (Activity Log)
+### 4.5 Activity History (Activity Log)
 
-El historial es un componente central visible en el perfil del candidato tanto para admins como para clientes.
+The history is a central component visible in the candidate profile for both admins and clients.
 
-Muestra entradas como:
+Shows entries like:
 ```
-🔄 María López movió a Juan Pérez de "Presentado" a "A Entrevistar" — hace 2 horas
-💬 Carlos García dejó un comentario — hace 1 día
-📋 Admin asignó a Juan Pérez a esta posición — 15 Feb 2025
+🔄 Jane Smith moved John Doe from "Submitted" to "To Interview" — 2 hours ago
+💬 Alex Johnson left a comment — 1 day ago
+📋 Admin assigned John Doe to this position — Feb 15, 2025
 ```
 
-Reglas:
-- Se registra automáticamente cada cambio de fase (con from_stage y to_stage)
-- Se registra automáticamente cada comentario nuevo
-- Se registra la asignación inicial del candidato a la posición
-- Cada entrada incluye: usuario, acción, timestamp
-- El log es inmutable (no se puede editar ni borrar)
-- Ordenado de más reciente a más antiguo
+Rules:
+- Each stage change is automatically recorded (with from_stage and to_stage)
+- Each new comment is automatically recorded
+- The initial assignment of the candidate to the position is recorded
+- Each entry includes: user, action, timestamp
+- The log is immutable (cannot be edited or deleted)
+- Ordered from most recent to oldest
 
-### 4.6 Visibilidad de Posiciones
+### 4.6 Position Visibility
 
-| Estado | Admin | Cliente |
+| Status | Admin | Client |
 |---|---|---|
-| Abierta | ✅ Visible y editable | ✅ Visible, puede interactuar |
-| Cerrada | ✅ Visible y editable | ❌ No visible |
+| Open | Visible and editable | Visible, can interact |
+| Closed | Visible and editable | Not visible |
 
-Cuando un admin cierra una posición, desaparece de la vista del cliente inmediatamente. El admin puede reabrir una posición y vuelve a ser visible.
+When an admin closes a position, it disappears from the client's view immediately. The admin can reopen a position and it becomes visible again.
 
-### 4.7 Notificaciones (v1 - mínimo)
-- Notificación in-app al admin cuando un cliente cambia la fase de un candidato
-- Notificación in-app al admin cuando un cliente deja un comentario
+### 4.7 Notifications (v1 - minimum)
+- In-app notification to admin when a client changes a candidate's stage
+- In-app notification to admin when a client leaves a comment
 
 ---
 
-## 5. Diseño y Sistema Visual
+## 5. Design and Visual System
 
-### 5.1 Filosofía de Diseño
+### 5.1 Design Philosophy
 
-Minimalista, profesional y limpio — alineado con la estética actual de nimble.la. La plataforma debe sentirse como una extensión natural del sitio de Nimble: espaciosa, moderna, con mucho aire y tipografía clara.
+Minimalist, professional, and clean — aligned with the current nimble.la aesthetic. The platform should feel like a natural extension of Nimble's website: spacious, modern, with plenty of whitespace and clear typography.
 
-Principios:
-- **Menos es más**: sin decoración innecesaria, sin bordes pesados, sin sombras excesivas
-- **Contenido primero**: la interfaz se borra y deja que los datos hablen
-- **Consistencia**: usar componentes shadcn/ui sin customización excesiva
-- **Jerarquía visual clara**: tamaños de fuente, peso y color guían la lectura
+Principles:
+- **Less is more**: no unnecessary decoration, no heavy borders, no excessive shadows
+- **Content first**: the interface fades away and lets the data speak
+- **Consistency**: use shadcn/ui components without excessive customization
+- **Clear visual hierarchy**: font sizes, weight, and color guide reading
 
-### 5.2 Paleta de Colores — Nimble (Admin)
+### 5.2 Color Palette — Nimble (Admin)
 
-Basada en la identidad actual de nimble.la:
+Based on nimble.la's current identity:
 
 ```
 /* Nimble Brand */
---nimble-black:       #0A0A0A;    /* Fondo principal (dark mode feel) */
---nimble-white:       #FAFAFA;    /* Texto sobre fondos oscuros */
---nimble-gray-50:     #F9FAFB;    /* Fondos claros, cards */
---nimble-gray-100:    #F3F4F6;    /* Bordes sutiles, separadores */
---nimble-gray-200:    #E5E7EB;    /* Bordes de inputs */
---nimble-gray-400:    #9CA3AF;    /* Texto secundario */
---nimble-gray-600:    #4B5563;    /* Texto body */
---nimble-gray-900:    #111827;    /* Texto principal (light mode) */
+--nimble-black:       #0A0A0A;    /* Main background (dark mode feel) */
+--nimble-white:       #FAFAFA;    /* Text on dark backgrounds */
+--nimble-gray-50:     #F9FAFB;    /* Light backgrounds, cards */
+--nimble-gray-100:    #F3F4F6;    /* Subtle borders, separators */
+--nimble-gray-200:    #E5E7EB;    /* Input borders */
+--nimble-gray-400:    #9CA3AF;    /* Secondary text */
+--nimble-gray-600:    #4B5563;    /* Body text */
+--nimble-gray-900:    #111827;    /* Primary text (light mode) */
 
-/* Acentos funcionales */
---stage-presentado:   #3B82F6;    /* Azul — nuevo, pendiente */
---stage-entrevistar:  #F59E0B;    /* Ámbar — en proceso */
---stage-aprobado:     #10B981;    /* Verde — éxito */
---stage-rechazado:    #EF4444;    /* Rojo — descartado */
+/* Functional accents */
+--stage-submitted:    #3B82F6;    /* Blue — new, pending */
+--stage-interview:    #F59E0B;    /* Amber — in process */
+--stage-approved:     #10B981;    /* Green — success */
+--stage-rejected:     #EF4444;    /* Red — discarded */
 ```
 
-### 5.3 Paleta de Colores — Cliente (Theming Dinámico)
+### 5.3 Color Palette — Client (Dynamic Theming)
 
-Cada organización define un `primary_color`. Este color se inyecta como CSS variable y reemplaza los acentos de la UI:
+Each organization defines a `primary_color`. This color is injected as a CSS variable and replaces the UI accents:
 
 ```css
 :root {
@@ -251,130 +251,130 @@ Cada organización define un `primary_color`. Este color se inyecta como CSS var
 }
 ```
 
-Se aplica a: botones primarios, links, badges activos, bordes de focus, sidebar/header accent. Los colores de las fases del pipeline se mantienen fijos (azul/ámbar/verde/rojo) independientemente del branding del cliente para mantener consistencia funcional.
+Applied to: primary buttons, links, active badges, focus borders, sidebar/header accent. Pipeline stage colors remain fixed (blue/amber/green/red) regardless of client branding to maintain functional consistency.
 
-### 5.4 Tipografía
+### 5.4 Typography
 
-Usar la misma fuente que nimble.la o una equivalente del sistema:
+Use the same font as nimble.la or a system equivalent:
 
 ```
 /* Font stack */
 font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-/* Escala */
+/* Scale */
 --text-xs:    0.75rem;   /* 12px — captions, timestamps */
---text-sm:    0.875rem;  /* 14px — texto secundario, labels */
---text-base:  1rem;      /* 16px — texto body */
---text-lg:    1.125rem;  /* 18px — subtítulos */
---text-xl:    1.25rem;   /* 20px — títulos de sección */
---text-2xl:   1.5rem;    /* 24px — títulos de página */
---text-3xl:   1.875rem;  /* 30px — headers principales */
+--text-sm:    0.875rem;  /* 14px — secondary text, labels */
+--text-base:  1rem;      /* 16px — body text */
+--text-lg:    1.125rem;  /* 18px — subtitles */
+--text-xl:    1.25rem;   /* 20px — section titles */
+--text-2xl:   1.5rem;    /* 24px — page titles */
+--text-3xl:   1.875rem;  /* 30px — main headers */
 
-/* Pesos */
+/* Weights */
 --font-normal:   400;
 --font-medium:   500;
 --font-semibold: 600;
 --font-bold:     700;
 ```
 
-### 5.5 Componentes UI (shadcn/ui + Tailwind)
+### 5.5 UI Components (shadcn/ui + Tailwind)
 
-| Componente | Uso |
+| Component | Usage |
 |---|---|
-| `Button` | Acciones primarias y secundarias. Primario: filled con color de acento. Secundario: outline/ghost. |
-| `Card` | Tarjetas de candidato en kanban, cards de posiciones |
-| `Table` | Vista lista de candidatos, lista de usuarios |
-| `Badge` | Indicadores de fase (coloreados), contadores |
-| `Dialog` / `Sheet` | Modales para crear/editar, sheets laterales para detalle rápido |
-| `Tabs` | Alternar entre vistas (kanban/lista), secciones del perfil |
-| `Avatar` | Iniciales del candidato (sin foto en v1) |
-| `Textarea` | Caja de comentarios |
-| `Input` / `Select` | Formularios de creación/edición |
-| `DropdownMenu` | Menú de acciones, cambio de fase |
-| `Tooltip` | Info contextual sobre íconos y acciones |
-| `Separator` | División visual entre secciones |
-| `ScrollArea` | Listas scrolleables (activity log, comentarios) |
+| `Button` | Primary and secondary actions. Primary: filled with accent color. Secondary: outline/ghost. |
+| `Card` | Candidate cards in kanban, position cards |
+| `Table` | Candidate list view, user lists |
+| `Badge` | Stage indicators (colored), counters |
+| `Dialog` / `Sheet` | Modals for create/edit, side sheets for quick detail |
+| `Tabs` | Toggle between views (kanban/list), profile sections |
+| `Avatar` | Candidate initials (no photo in v1) |
+| `Textarea` | Comment box |
+| `Input` / `Select` | Creation/editing forms |
+| `DropdownMenu` | Action menu, stage change |
+| `Tooltip` | Contextual info on icons and actions |
+| `Separator` | Visual division between sections |
+| `ScrollArea` | Scrollable lists (activity log, comments) |
 
-### 5.6 Layout General
+### 5.6 General Layout
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Sidebar (colapsable)          │  Contenido          │
+│  Sidebar (collapsible)         │  Content            │
 │                                │                     │
 │  ┌──────────────────────┐      │                     │
-│  │ Logo (Nimble o        │      │                     │
-│  │ cliente según rol)    │      │                     │
+│  │ Logo (Nimble or       │      │                     │
+│  │ client based on role) │      │                     │
 │  ├──────────────────────┤      │                     │
-│  │ Navegación            │      │                     │
+│  │ Navigation            │      │                     │
 │  │ · Dashboard           │      │                     │
-│  │ · Clientes            │      │                     │
-│  │ · Candidatos          │      │                     │
-│  │ · (o Posiciones       │      │                     │
-│  │    si es cliente)     │      │                     │
+│  │ · Clients             │      │                     │
+│  │ · Candidates          │      │                     │
+│  │ · (or Positions       │      │                     │
+│  │    if client)         │      │                     │
 │  ├──────────────────────┤      │                     │
-│  │ Usuario               │      │                     │
-│  │ · Nombre + Avatar     │      │                     │
+│  │ User                  │      │                     │
+│  │ · Name + Avatar       │      │                     │
 │  │ · Logout              │      │                     │
 │  └──────────────────────┘      │                     │
 └─────────────────────────────────────────────────────┘
 ```
 
-- **Sidebar izquierdo** colapsable (icono en mobile)
-- Logo del cliente (o Nimble) en la parte superior
-- Navegación según el rol
-- El área de contenido es el 100% del ancho restante
-- En mobile: sidebar se convierte en bottom navigation o hamburger menu
+- **Left sidebar** collapsible (icon on mobile)
+- Client logo (or Nimble) at the top
+- Navigation based on role
+- Content area is 100% of remaining width
+- On mobile: sidebar becomes bottom navigation or hamburger menu
 
-### 5.7 Estilo de las Cards de Candidato (Kanban)
+### 5.7 Candidate Card Style (Kanban)
 
 ```
 ┌──────────────────────────────┐
-│  JD   Juan Díaz              │
+│  JD   John Doe               │
 │       Senior Developer       │
-│       Empresa Actual S.A.    │
+│       Current Company Inc.   │
 │                              │
-│  💬 3 comentarios  · hace 2h │
+│  💬 3 comments  · 2h ago     │
 └──────────────────────────────┘
 ```
 
-- Fondo blanco (`gray-50`), borde sutil (`gray-200`), rounded-lg
-- Avatar con iniciales (circle, coloreado)
-- Nombre en `font-semibold`, detalles en `text-sm text-gray-500`
-- Indicador de actividad (comentarios, última interacción) en el footer de la card
-- Hover: sombra sutil (`shadow-sm` → `shadow-md`)
-- Sin bordes pesados ni gradientes
+- White background (`gray-50`), subtle border (`gray-200`), rounded-lg
+- Avatar with initials (circle, colored)
+- Name in `font-semibold`, details in `text-sm text-gray-500`
+- Activity indicator (comments, last interaction) in card footer
+- Hover: subtle shadow (`shadow-sm` → `shadow-md`)
+- No heavy borders or gradients
 
-### 5.8 Logo de Nimble
+### 5.8 Nimble Logo
 
-El logo SVG de Nimble (`nimble-logo.svg` de https://nimble.la/) se usa como asset de la plataforma:
-- En el sidebar del panel admin
-- En la pantalla de login
-- Como fallback cuando un cliente no tiene logo configurado
+The Nimble SVG logo (`nimble-logo.svg` from https://nimble.la/) is used as a platform asset:
+- In the admin panel sidebar
+- On the login screen
+- As fallback when a client doesn't have a configured logo
 
-El logo se debe incluir como asset estático en el proyecto (`/public/nimble-logo.svg`).
+The logo should be included as a static asset in the project (`/public/nimble-logo.svg`).
 
-### 5.9 Modo de Color
+### 5.9 Color Mode
 
-**v1: Light mode solamente.** El sitio de nimble.la tiene un estilo dark, pero para una plataforma de gestión tipo dashboard, light mode es más práctico para lectura y uso prolongado. El dark theme queda como iteración futura.
+**v1: Light mode only.** The nimble.la site has a dark style, but for a management/dashboard platform, light mode is more practical for reading and extended use. Dark theme is left as a future iteration.
 
-Fondo principal: `#FFFFFF` o `gray-50`
-Sidebar: `gray-900` o `gray-950` (para mantener contraste y algo del feel dark de Nimble)
+Main background: `#FFFFFF` or `gray-50`
+Sidebar: `gray-900` or `gray-950` (to maintain contrast and some of Nimble's dark feel)
 
 ---
 
 ## 6. Tech Stack
 
-| Capa | Tecnología | Justificación |
+| Layer | Technology | Justification |
 |---|---|---|
-| **Frontend + SSR** | Next.js 14+ (App Router) + TypeScript | SSR/SSG, routing integrado, optimización de imágenes, API routes si se necesitan |
-| **UI Components** | shadcn/ui + Tailwind CSS | Componentes accesibles, customizables. Tailwind facilita el theming dinámico por cliente (CSS variables) |
-| **Backend / API** | Convex | Realtime out-of-the-box, serverless, typesafe con TS |
-| **Auth** | Supabase Auth | Simple, soporta email/password, JWT |
-| **Storage (Archivos + Logos)** | Supabase Storage | Upload de archivos sin límite de tamaño, URLs firmadas para descarga |
-| **Base de Datos** | Convex (integrado) | El estado principal vive en Convex; Supabase solo para auth + storage |
-| **Hosting** | Vercel | Deploy nativo para Next.js, edge functions, preview deploys |
+| **Frontend + SSR** | Next.js 14+ (App Router) + TypeScript | SSR/SSG, integrated routing, image optimization, API routes if needed |
+| **UI Components** | shadcn/ui + Tailwind CSS | Accessible, customizable components. Tailwind facilitates dynamic per-client theming (CSS variables) |
+| **Backend / API** | Convex | Realtime out-of-the-box, serverless, typesafe with TS |
+| **Auth** | Supabase Auth | Simple, supports email/password, JWT |
+| **Storage (Files + Logos)** | Supabase Storage | File uploads with no size limit, signed URLs for downloads |
+| **Database** | Convex (built-in) | Main state lives in Convex; Supabase only for auth + storage |
+| **Hosting** | Vercel | Native deployment for Next.js, edge functions, preview deploys |
 
-### Arquitectura simplificada
+### Simplified Architecture
 
 ```
 ┌──────────────────┐     ┌──────────────┐     ┌─────────────────┐
@@ -384,142 +384,142 @@ Sidebar: `gray-900` o `gray-950` (para mantener contraste y algo del feel dark d
 └──────────────────┘     └──────────────┘     └─────────────────┘
 ```
 
-- **Convex** maneja toda la lógica de negocio, queries, mutations y la base de datos.
-- **Supabase** se usa exclusivamente para autenticación y storage de archivos.
-- El frontend se comunica con Convex en tiempo real (subscripciones reactivas).
-- **Next.js App Router** maneja routing, layouts por rol, y server components donde convenga.
+- **Convex** handles all business logic, queries, mutations, and the database.
+- **Supabase** is used exclusively for authentication and file storage.
+- The frontend communicates with Convex in real-time (reactive subscriptions).
+- **Next.js App Router** handles routing, role-based layouts, and server components where appropriate.
 
 ---
 
-## 7. Pantallas y Rutas
+## 7. Screens and Routes
 
 ### Admin
 
 ```
-/admin                         → Dashboard general
-/admin/clients                 → Lista de clientes (organizaciones)
-/admin/clients/new             → Crear cliente (nombre, logo, color)
-/admin/clients/[id]            → Detalle del cliente + posiciones (abiertas y cerradas)
-/admin/clients/[id]/users      → Gestión de usuarios del cliente
-/admin/clients/[id]/positions  → Posiciones del cliente
-/admin/positions/[id]          → Pipeline de una posición (kanban + lista) + actividad
-/admin/candidates              → Banco global de candidatos
-/admin/candidates/new          → Crear candidato (datos + archivos + link Manatal)
-/admin/candidates/[id]         → Perfil completo + posiciones asignadas + actividad
+/admin                         → General dashboard
+/admin/clients                 → Client list (organizations)
+/admin/clients/new             → Create client (name, logo, color)
+/admin/clients/[id]            → Client detail + positions (open and closed)
+/admin/clients/[id]/users      → Client user management
+/admin/clients/[id]/positions  → Client positions
+/admin/positions/[id]          → Position pipeline (kanban + list) + activity
+/admin/candidates              → Global candidate bank
+/admin/candidates/new          → Create candidate (data + files + Manatal link)
+/admin/candidates/[id]         → Full profile + assigned positions + activity
 ```
 
-### Cliente
+### Client
 
 ```
-/positions                     → Mis posiciones abiertas (lista)
-/positions/[id]                → Candidatos de la posición (kanban / lista, con filtros y orden)
-/positions/[id]/candidates/[cid] → Perfil del candidato + comentarios + historial de actividad
+/positions                     → My open positions (list)
+/positions/[id]                → Position candidates (kanban / list, with filters and sorting)
+/positions/[id]/candidates/[cid] → Candidate profile + comments + activity history
 ```
 
 ### Shared
 
 ```
-/login                         → Login con email/password
+/login                         → Login with email/password
 ```
 
 ---
 
-## 8. Pipeline de Candidatos (Fases)
+## 8. Candidate Pipeline (Stages)
 
 ```
 ┌──────────────┐    ┌────────────────┐    ┌────────────┐    ┌─────────────┐
-│  Presentado  │───▶│ A Entrevistar  │───▶│  Aprobado  │    │  Rechazado  │
+│   Submitted  │───▶│  To Interview  │───▶│  Approved  │    │  Rejected   │
 └──────────────┘    └────────────────┘    └────────────┘    └─────────────┘
                            │                                       ▲
                            └───────────────────────────────────────┘
 ```
 
-- Un candidato arranca siempre en **Presentado** cuando el admin lo asigna a una posición.
-- El cliente (o el admin) puede moverlo a **A Entrevistar**, **Aprobado** o **Rechazado**.
-- **Rechazado** se puede alcanzar desde cualquier fase.
-- Cada cambio de fase queda registrado en el Activity Log con: quién lo hizo, de qué fase a cuál, y cuándo.
-- **El stage es por posición**: un mismo candidato puede estar "Aprobado" en una posición y "Presentado" en otra.
+- A candidate always starts at **Submitted** when the admin assigns them to a position.
+- The client (or admin) can move them to **To Interview**, **Approved**, or **Rejected**.
+- **Rejected** can be reached from any stage.
+- Each stage change is recorded in the Activity Log with: who did it, from which stage to which, and when.
+- **Stage is per position**: the same candidate can be "Approved" in one position and "Submitted" in another.
 
-Colores de las fases (fijos, no cambian con el branding del cliente):
+Stage colors (fixed, don't change with client branding):
 
-| Fase | Color | Tailwind |
+| Stage | Color | Tailwind |
 |---|---|---|
-| Presentado | Azul | `blue-500` |
-| A Entrevistar | Ámbar | `amber-500` |
-| Aprobado | Verde | `emerald-500` |
-| Rechazado | Rojo | `red-500` |
+| Submitted | Blue | `blue-500` |
+| To Interview | Amber | `amber-500` |
+| Approved | Green | `emerald-500` |
+| Rejected | Red | `red-500` |
 
 ---
 
-## 9. Candidatos Compartidos — Flujo
+## 9. Shared Candidates — Flow
 
-Como un candidato puede estar en múltiples posiciones y clientes, el flujo es:
+Since a candidate can be in multiple positions and clients, the flow is:
 
-1. **Admin crea candidato** en el banco global (datos + archivos + link Manatal opcional).
-2. **Admin asigna candidato** a una posición → se crea un `CandidatePosition` con stage "Presentado".
-3. El mismo candidato puede asignarse a otra posición (mismo o distinto cliente).
-4. **Cada asignación tiene su propio pipeline** independiente (stage, comentarios, actividad).
-5. **El cliente solo ve** los candidatos asignados a sus posiciones abiertas — nunca ve que el candidato está en otro lado.
+1. **Admin creates candidate** in the global bank (data + files + optional Manatal link).
+2. **Admin assigns candidate** to a position → creates a `CandidatePosition` with stage "Submitted".
+3. The same candidate can be assigned to another position (same or different client).
+4. **Each assignment has its own independent pipeline** (stage, comments, activity).
+5. **The client only sees** candidates assigned to their open positions — never sees that the candidate is elsewhere.
 
-### Datos visibles por rol
+### Data visible by role
 
-| Campo | Admin | Cliente |
+| Field | Admin | Client |
 |---|---|---|
-| Nombre completo | ✅ | ✅ |
-| Email | ✅ | ✅ |
-| Teléfono | ✅ | ✅ |
-| Rol actual / empresa | ✅ | ✅ |
-| Resumen / summary | ✅ | ✅ |
-| Archivos (CV, docs) | ✅ | ✅ |
-| Historial de actividad | ✅ | ✅ |
-| Comentarios de su org | ✅ | ✅ |
-| Link Manatal | ✅ | ❌ |
-| Otras posiciones asignadas | ✅ | ❌ |
-| Comentarios de otros clientes | ❌ (aislado) | ❌ (solo su org) |
+| Full name | Yes | Yes |
+| Email | Yes | Yes |
+| Phone | Yes | Yes |
+| Current role / company | Yes | Yes |
+| Summary | Yes | Yes |
+| Files (CV, docs) | Yes | Yes |
+| Activity history | Yes | Yes |
+| Comments from their org | Yes | Yes |
+| Manatal link | Yes | No |
+| Other assigned positions | Yes | No |
+| Comments from other clients | No (isolated) | No (their org only) |
 
 ---
 
-## 10. Requerimientos No Funcionales
+## 10. Non-Functional Requirements
 
-- **Performance**: La app debe cargar en < 2s. Convex provee realtime sin polling. Next.js optimiza con SSR y server components.
-- **Seguridad**: Aislamiento total entre organizaciones. Un cliente nunca ve datos de otro. Las queries de Convex filtran siempre por org_id.
-- **Mobile-friendly**: UI responsive, usable desde celular (no app nativa).
-- **Simplicidad**: Máximo 3 clicks para cualquier acción principal.
-- **Escalabilidad**: Serverless (Convex + Vercel) escala automáticamente.
-- **Theming**: El branding del cliente se aplica sin rebuild — es dinámico vía CSS variables.
-- **Storage**: Sin límite de tamaño ni tipo de archivo para uploads de candidatos.
-- **Auditabilidad**: Todo cambio de fase queda registrado con usuario y timestamp. El log es inmutable.
+- **Performance**: The app should load in < 2s. Convex provides realtime without polling. Next.js optimizes with SSR and server components.
+- **Security**: Total isolation between organizations. A client never sees another's data. Convex queries always filter by org_id.
+- **Mobile-friendly**: Responsive UI, usable from mobile (no native app).
+- **Simplicity**: Maximum 3 clicks for any primary action.
+- **Scalability**: Serverless (Convex + Vercel) scales automatically.
+- **Theming**: Client branding is applied without rebuild — it's dynamic via CSS variables.
+- **Storage**: No size or file type limit for candidate uploads.
+- **Auditability**: Every stage change is recorded with user and timestamp. The log is immutable.
 
 ---
 
-## 11. Futuras Iteraciones (Post-MVP)
+## 11. Future Iterations (Post-MVP)
 
-| Versión | Feature |
+| Version | Feature |
 |---|---|
-| v1.1 | Notificaciones por email (nuevo candidato, cambio de fase, nuevo comentario) |
-| v1.2 | Integración con Manatal vía API (importar candidatos y posiciones automáticamente) |
-| v1.3 | Filtros avanzados y búsqueda de candidatos (por skills, experiencia, etc.) |
-| v1.4 | Dashboard analytics (time-to-hire, tasas de aprobación por cliente, por posición) |
-| v1.5 | Fases customizables por cliente u organización |
-| v1.6 | Permisos granulares por usuario de cliente (viewer, commenter, manager) |
+| v1.1 | Email notifications (new candidate, stage change, new comment) |
+| v1.2 | Manatal API integration (import candidates and positions automatically) |
+| v1.3 | Advanced filters and candidate search (by skills, experience, etc.) |
+| v1.4 | Dashboard analytics (time-to-hire, approval rates by client, by position) |
+| v1.5 | Customizable stages per client or organization |
+| v1.6 | Granular permissions per client user (viewer, commenter, manager) |
 | v1.7 | Dark mode |
-| v2.0 | Portal público de careers para los clientes de Nimble |
+| v2.0 | Public careers portal for Nimble's clients |
 
 ---
 
-## 12. Criterios de Éxito (MVP)
+## 12. Success Criteria (MVP)
 
-- Un admin puede crear un cliente (con branding), una posición, y subir candidatos con archivos en < 5 minutos.
-- Un cliente puede loguearse, ver la plataforma con su branding, revisar candidatos, dejar feedback y mover fases sin necesitar instrucciones.
-- El cliente puede alternar entre vista kanban y lista, filtrar por fase, y ordenar por fecha o última interacción.
-- El historial de actividad muestra claramente quién hizo qué y cuándo.
-- Un mismo candidato puede existir en múltiples posiciones con pipelines independientes.
-- El sistema mantiene aislamiento total entre clientes.
-- Las posiciones cerradas desaparecen de la vista del cliente.
-- Los comentarios son colaborativos entre usuarios de la misma organización.
-- La plataforma funciona correctamente en desktop y mobile.
-- La UI se siente como una extensión natural de nimble.la: limpia, profesional, minimalista.
+- An admin can create a client (with branding), a position, and upload candidates with files in < 5 minutes.
+- A client can log in, see the platform with their branding, review candidates, leave feedback, and change stages without needing instructions.
+- The client can toggle between kanban and list views, filter by stage, and sort by date or last interaction.
+- The activity history clearly shows who did what and when.
+- The same candidate can exist in multiple positions with independent pipelines.
+- The system maintains total isolation between clients.
+- Closed positions disappear from the client's view.
+- Comments are collaborative among users of the same organization.
+- The platform works correctly on desktop and mobile.
+- The UI feels like a natural extension of nimble.la: clean, professional, minimalist.
 
 ---
 
-*Todas las preguntas abiertas han sido resueltas. Este PRD está listo para pasar a la fase de documento de construcción.*
+*All open questions have been resolved. This PRD is ready to move to the build document phase.*
