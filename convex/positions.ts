@@ -76,6 +76,36 @@ export const listOpenByOrg = query({
   },
 });
 
+export const listAll = query({
+  args: {
+    status: v.optional(v.union(v.literal("open"), v.literal("closed"))),
+  },
+  handler: async (ctx, args) => {
+    const allPositions = await ctx.db.query("positions").collect();
+
+    const filtered = args.status
+      ? allPositions.filter((p) => p.status === args.status)
+      : allPositions;
+
+    const enriched = await Promise.all(
+      filtered.map(async (pos) => {
+        const org = await ctx.db.get(pos.orgId);
+        const cps = await ctx.db
+          .query("candidatePositions")
+          .withIndex("by_position", (q) => q.eq("positionId", pos._id))
+          .collect();
+        return {
+          ...pos,
+          orgName: org?.name ?? "Unknown",
+          candidateCount: cps.length,
+        };
+      })
+    );
+
+    return enriched.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
 export const create = mutation({
   args: {
     title: v.string(),
